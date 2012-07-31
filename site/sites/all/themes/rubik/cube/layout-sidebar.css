@@ -1,0 +1,8 @@
+#content,
+#right { float:left; }
+
+#content { width:79.67%; }
+#right { width:220px; }
+
+.sidebar-right #content {width: 880px;}
+.sidebar-right #right {float: right;}
