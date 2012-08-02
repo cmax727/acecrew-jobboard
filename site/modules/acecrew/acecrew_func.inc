@@ -6,6 +6,7 @@ class acecrewmodule {
     
     private $currentJobId = null;
     private $currentClientId = null;
+    private $nextJobCallId = null;
     
     private function __construct() { }
     
@@ -13,7 +14,7 @@ class acecrewmodule {
     
     public static function getInstance() {
         if (self::$instance === null) {
-            self::$instance = new self;
+            self::$instance = new acecrewmodule();
         }
         return self::$instance;
     }
@@ -22,12 +23,17 @@ class acecrewmodule {
     {
         return $this->currentJobId;
     }
-    
+
     public function getCurrentClientId()
     {
         return $this->currentClientId;
     }
-    
+
+    public function getNextJobCallId()
+    {
+        return $this->nextJobCallId;
+    }
+        
     public function setCurrentJobId($id)
     {
         $this->currentJobId = $id;
@@ -36,6 +42,11 @@ class acecrewmodule {
     public function setCurrentClientId($id)
     {
         $this->currentClientId = $id;
+    }
+    
+    public function setNextJobCallId($callId)
+    {
+        $this->nextJobCallId = $callId;
     }
 }
 
