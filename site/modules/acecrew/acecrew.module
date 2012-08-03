@@ -95,6 +95,14 @@ function acecrew_menu() {
         'access arguments' => array('acecrew calendar'),
         'type' => MENU_NORMAL_ITEM,
     );
+    //?? sasya added
+    $items['acecrew/calendar-popup/sms/%'] = array(
+        'title' => 'Ace Crew SMS',
+        'page callback' => 'acecrew_calendar_popup_sms',
+        'page arguments' => array(3),
+        'access arguments' => array('acecrew calendar'),
+        'type' => MENU_NORMAL_ITEM,
+    );
     $items['acecrew/calendar/%'] = array(
         'title' => 'Ace Crew Calendar Date',
         'page callback' => 'acecrew_calendar_date',
@@ -573,6 +581,56 @@ function acecrew_email_quote($invoice_id){
     unlink($filepath . $filename);
     drupal_goto($_SERVER['HTTP_REFERER']);
 }
+//?? sasya added
+function acecrew_calendar_popup_sms($callNodeid){
+    modalframe_child_js() ;
+    
+        $session_node = node_load(array('nid' => $callNodeid));
+        
+        $ses_count_crews = $session_node->field_job_session_crew[0]['value'];
+        $ses_count_hours = $session_node->field_job_session_hours[0]['value'];
+        $ses_date_time = $session_node->field_job_session_date_time[0]['value'];
+        $ses_call_contact = $session_node->field_call_contact[0]['value'];
+        $ses_call_contact  = acecrew_get_client_by_id($ses_call_contact);
+        $ses_call_contact = $ses_call_contact->field_client_name[0]['value'];
+        $node_id = $session_node->nid;
+        $ses_call_time = $session_node->field_job_session_date_time[0]['value'];
+        $ses_call_id = $session_node->field_session_callid[0]['value'];
+
+                                                                         
+        $job = node_load(array('nid' => $session_node->field_session_job_nid[0]['value']));
+        $client = acecrew_get_client_by_id($job->field_job_client_name[0]['value']);
+        $client_name = $client->field_client_name[0]['value'];
+        $venue = acecrew_get_venue_by_id($job->field_job_venue[0]['value']);
+        $venue_name = $venue->field_venue_name[0]['value'];
+        $venu_address = $venue->field_venu_address[0]['value'];
+        $venu_post_code = $venue->field_venu_post_code[0]['value'];
+        
+        $crew_suppl = $session_node->field_call_supplements[0]['value'];
+        
+        
+        $crew_name = 'undefined';
+        $crew_mobile = 'undefined';
+        
+    
+    $output = <<<EOD
+        J:$ses_call_id <br/>
+        Day: $ses_call_time  <br/>
+        $ses_count_crews ($ses_count_hours hrs) <br/>
+        $client_name <br/>
+        $venue_name, $venu_address, $venu_post_code <br/>
+        Cont: $ses_call_contact <br/>
+        Please reply J: $ses_call_id OK!<br/>
+        <br/>
+        <br/>
+        J: $ses_call_id <br/>
+        Day: $ses_call_time <!-- $call-day $call-date $call-time --> <br/>
+        $crew_name +$crew_mobile <br/>
+
+EOD;
+return $output;
+        
+};
 
 function acecrew_calendar(){
     
@@ -580,9 +638,15 @@ function acecrew_calendar(){
         'basepath' => drupal_get_path('module', 'acecrew'),
     );
     drupal_add_js(array('acecrew' => $my_settings), "setting");
-	
+    
     drupal_add_js(drupal_get_path('module', 'acecrew') . '/theme/acecrew-calendar.js');
     drupal_add_css(drupal_get_path('module', 'acecrew') . '/theme/acecrew_session_crew_statused_name_colours.css', 'module', 'all', false);
+    
+    //??sasya added
+    modalframe_parent_js();
+    
+    drupal_add_js(drupal_get_path('module', 'acecrew') . '/theme/acecrew-diary-events.js');
+    
     
     $output = '';
     $output .= drupal_get_form('acecrew_calendar_form');
@@ -605,16 +669,17 @@ function acecrew_calendar_date($date){
         $client_name = $client->field_client_name[0]['value'];
         $venue = acecrew_get_venue_by_id($job->field_job_venue[0]['value']);
         $venue_name = $venue->field_venue_name[0]['value'];
-		$crew_suppl = $session_node->field_call_supplements[0]['value'];
+        $crew_suppl = $session_node->field_call_supplements[0]['value'];
         
         
         $session_node = node_load(array('nid' => $row->nid));
+        $ses_callid = $session_node->field_session_callid[0]['value'];
         $ses_count_crews = $session_node->field_job_session_crew[0]['value'];
         $ses_count_hours = $session_node->field_job_session_hours[0]['value'];
-		
-		
-        $node_id = '<span>The session node is:' . $session_node->nid . '</span>';
-		
+        
+        
+        $node_id = $session_node->nid;
+        
         $crews = '';
         foreach($session_node->field_job_session_crews as $ses_crew){
             $crew_name = $ses_crew['value']['field_crew_job_session_name'][0]['value'];
@@ -623,18 +688,18 @@ function acecrew_calendar_date($date){
             $crew_name = $user->name;
             $crews .= '<li class="session_crew_statused_name_' . $crew_status . '">' . $crew_name . '</li>';
         }
-		
-		$supp_name = '';
-		foreach($session_node->field_call_supplements as $item) {
-		$supp_node = node_load($item['nid']);
-		$supp_title = $supp_node->title;
- 		$supp_name .= '<span>' . $supp_title . '</span>';
-		}
-		
-		 
-		
+        
+        $supp_name = '';
+        foreach($session_node->field_call_supplements as $item) {
+        $supp_node = node_load($item['nid']);
+        $supp_title = $supp_node->title;
+         $supp_name .= '<span>' . $supp_title . '</span>';
+        }
+        
+         
+        
         $supps =  $supp_name;
-		
+        
         $crews = '<ul class="crew_statuses_ul">' . $crews . '</ul>';
         
         $job_status_code = $job->field_job_status[0]['value'];
@@ -645,14 +710,16 @@ function acecrew_calendar_date($date){
             'venue' => $venue_name,
             'client' => $client_name,
             'job_id' => $job->field_job_number[0]['value'],
+            'call_id' => $ses_callid, 
             'job_ref' => $job->path,
             'job_status_code' => $job_status_code,
             'job_status' => $job_status,
             'ses_count_crews' => $ses_count_crews,
             'ses_count_hours' => $ses_count_hours,
             'crews' => $crews,
-			'supplement' => $supps,
-			'nodeid' => $node_id
+            'supplement' => $supps,
+            'nodeid' => $node_id
+             
         );
         
     }
@@ -956,6 +1023,24 @@ function acecrew_nodeapi(&$node, $op, $teaser, $page) {
         
         $client_nid = _acecrew_get_client_nid_by_job_nid($node->nid);
         $acecrewmodule->setCurrentClientId($client_nid);
+        
+        
+        $query = "SELECT j.field_job_number_value FROM drupal_content_type_job j
+                WHERE j.nid = '%d'";
+        $query_result =  db_query($query, $node->nid);
+        $row = db_fetch_array($query_result);
+        
+        $jbNum = $row['field_job_number_value'];
+        $jbSessionCount = 0;
+        
+        $query = "SELECT count(*)+1 cc FROM drupal_content_type_job j
+        JOIN drupal_content_type_job_session s ON j.nid = s.field_session_job_nid_value
+        WHERE j.nid = '%d'";
+        $query_result =  db_query($query, $node->nid);
+        $row = db_fetch_array($query_result);
+        $jbSessionCount = $row['cc'];
+    
+        $acecrewmodule->setNextJobCallId("$jbNum-$jbSessionCount");
     }
     
     if($node->type ==  'job' && ($op == 'prepare' || $op == 'validate')){
@@ -1316,28 +1401,31 @@ global $user;
     if(empty($scheduler)){
         return '<span class="acecrew_calendar_no_events">' . t('There are no items to display') . '</span>';
     }
-
-	$title = '<span class="call-count-title">' . count($scheduler) . ' calls</span>';
-	$items = array();
+     
+    $title = '<span class="call-count-title">' . count($scheduler) . ' calls</span>';
+    $items = array();
     foreach($scheduler as $event){ 
-        $items[] = array('data' => '<div class="call-first-row"><strong><span class="call-id">' . $event['job_id'] . '</span><span class="call-time">' .  $event['time'] . '</span><span class="call-crew-count">' .  $event['ses_count_crews'] . ' crew</span><span class="call-hours">' .  $event['ses_count_hours'] . ' hours</span></strong></div>
-									
-									<div class="call-second-row"><span class="call-status"><strong>Call Status:</strong> ' . $event['job_status'] . '</span><span class="call-client"><strong>Client:</strong> ' .  $event['client'] . '</span><span class="call-venue"><strong>Venue:</strong> ' .  $event['venue'] . '</span></div>
-									
-									<div class="call-third-row"><strong>Skills Required:</strong>'. $event['supplement'] . '</div>
-									
-									<div class="call-fourth-row"><strong>Crew Names:</strong> ' . $event['crews'] . '</div>
-									
-									<div class="call-dummy-row"><strong>Node ID:</strong> ' . $event['nodeid'] . '</div>
-									
-									<div class="call-buttons"><a href="#" class="loadbtn" id="'.$event['job_id'].'">Load Call</a><a href="#">Allocate Skills</a><a href="#">Generate SMS Content</a></div>', 
-									
-						 'class' => 'call-listing-item');
+        $items[] = array('data' => '<div class="call-first-row"><strong><span class="call-id">' . $event['call_id'] . '</span><span class="call-time">' .  $event['time'] . '</span><span class="call-crew-count">' .  $event['ses_count_crews'] . ' crew</span><span class="call-hours">' .  $event['ses_count_hours'] . ' hours</span></strong></div>
+                                    
+                                    <div class="call-second-row"><span class="call-status"><strong>Call Status:</strong> ' . $event['job_status'] . '</span><span class="call-client"><strong>Client:</strong> ' .  $event['client'] . '</span><span class="call-venue"><strong>Venue:</strong> ' .  $event['venue'] . '</span></div>
+                                    
+                                    <div class="call-third-row"><strong>Skills Required:</strong>'. $event['supplement'] . '</div>
+                                    
+                                    <div class="call-fourth-row"><strong>Crew Names:</strong> ' . $event['crews'] . '</div>
+                                    
+                                    <div class="call-dummy-row"><strong>Node ID:</strong><span>The session node is: ' . $event['nodeid'] . '</span></div>
+                                    
+                                    <div class="call-buttons">  <a href="#" class="loadbtn" id="'.$event['call_id'].'">Load Call</a>
+                                                                <a href="#">Allocate Skills</a>
+                                                                <a href="#" class="smsbtn" onclick="calendar_popup_sms_click('."'$base_url' ,'${event['nodeid']}'". ')">Generate SMS Content</a></div>', 
+                                    
+                         'class' => 'call-listing-item');
     }
 
 $dummyhtml='<div class="block-content clear-block prose"><span class="icon-info"></span><p>Click on the load call button at the bottom of each call, to load more information</p></div>';
 $output = theme('item_list', $items, $title, 'ul', array('class' => 'call-listing'));
- $output= $output.'<script>$("#block-block-2").html("'.addslashes($dummyhtml).'"); $(".loadbtn").click(function() { var ID = $(this).attr("id"); $("#block-block-2").html("<div align=\"center\"><img src=\"'.$base_url.'/loader.gif\"></div>"); $("#block-block-2").load("'.$base_url.'/myjob.php?id="+ID); });</script>';
+$output= $output.'<script>$("#block-block-2").html("'.addslashes($dummyhtml).'"); $(".loadbtn").click(function() { var ID = $(this).attr("id"); $("#block-block-2").html("<div align=\"center\"><img src=\"'.$base_url.'/loader.gif\"></div>"); $("#block-block-2").load("'.$base_url.'/myjob.php?id="+ID); });</script>';
+//$output.'<script>$(".smsbtn").click(function() { var ID = $(this).attr("id"); $("#block-block-2").html("<div align=\"center\"><img src=\"'.$base_url.'/loader.gif\"></div>"); $("#block-block-2").load("'.$base_url.'/myjob.php?id="+ID); });</script>';
 return $output;
 }
 
