@@ -91,7 +91,7 @@
  */
 //$db_url = 'mysql://web160-a-drup-42:RWHN%21hD%21d@localhost:3306/web160-a-drup-42';
 //$db_prefix = 'drupal_';
-$db_url = 'mysql://web131-a-drup-8:cD4mRC-UU@localhost/web131-a-drup-8';
+$db_url = 'mysql://root:root@localhost:3306/acecrew_drp';
 $db_prefix = 'drupal_';
 
 /**
