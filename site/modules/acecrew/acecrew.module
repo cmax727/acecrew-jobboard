@@ -1407,27 +1407,23 @@ function theme_acecrew_calendar_scheduler($scheduler)
     $items = array();
     $index = 0;
     foreach($scheduler as $event){ 
-        $items[] = array('data' => '<div class="call-first-row"><strong><span class="call-id">' . $event['call_id'] . '</span><span class="call-time">' .  $event['time'] . '</span><span class="call-crew-count">' .  $event['ses_count_crews'] . ' crew</span><span class="call-hours">' .  $event['ses_count_hours'] . ' hours</span></strong></div>
-                                    
-                                    <div class="call-second-row"><span class="call-status"><strong>Call Status:</strong> ' . $event['job_status'] . '</span><span class="call-client"><strong>Client:</strong> ' .  $event['client'] . '</span><span class="call-venue"><strong>Venue:</strong> ' .  $event['venue'] . '</span></div>
-                                    
-                                    <div class="call-third-row"><strong>Skills Required:</strong>'. $event['supplement'] . '</div>
-                                    
-                                    <div class="call-fourth-row"><strong>Crew Names:</strong> ' . $event['crews'] . '</div>
-                                    
-                                    <div class="call-dummy-row"><strong>Node ID:</strong><span>The session node is: ' . $event['nodeid'] . '</span></div>
-                                    
-                                    <div class="call-buttons">  <a href="#" class="loadbtn" id="'.$event['call_id'].'">Load Call</a>
-                                                                <a href="#">Allocate Skills</a>
-                                                                <a href="#" class="smsbtn" onclick="calendar_popup_sms_click('."'$base_url' ,'${event['nodeid']}'". ')">Generate SMS Content</a></div>', 
-                                    
-                         'class' => 'call-listing-item', 
-                         'id' => 'call-listing-item-' . $index++,
+        $items[] = array('data' => '
+            <div class="call-first-row"><strong><span class="call-id">' . $event['call_id'] . '</span><span class="call-time">' .  $event['time'] . '</span><span class="call-crew-count">' .  $event['ses_count_crews'] . ' crew</span><span class="call-hours">' .  $event['ses_count_hours'] . ' hours</span></strong></div>
+            <div class="call-second-row"><span class="call-status"><strong>Call Status:</strong> ' . $event['job_status'] . '</span><span class="call-client"><strong>Client:</strong> ' .  $event['client'] . '</span><span class="call-venue"><strong>Venue:</strong> ' .  $event['venue'] . '</span></div>
+            <div class="call-third-row"><strong>Skills Required:</strong>'. $event['supplement'] . '</div>
+            <div class="call-fourth-row"><strong>Crew Names:</strong> ' . $event['crews'] . '</div>
+            <div class="call-dummy-row"><strong>Node ID:</strong><span>The session node is: ' . $event['nodeid'] . '</span></div>
+            <div class="call-buttons">  <a href="#" class="loadbtn" id="'.$event['call_id'].'">Load Call</a>
+            <a href="#">Allocate Skills</a>
+            <a href="#" class="smsbtn" onclick="calendar_popup_sms_click('."'$base_url' ,'${event['nodeid']}'". ')">Generate SMS Content</a></div>', 
+            'class' => 'call-listing-item', 
+            'id' => 'call-listing-item-' . $index++, 
         );
     }
-     
+
     $dummyhtml='<div class="block-content clear-block prose"><span class="icon-info"></span><p>Click on the load call button at the bottom of each call, to load more information</p></div>';
     $output = theme('item_list', $items, $title, 'ul', array('class' => 'call-listing'));
+
     $output = $output . '
         <script>
             $(".loadbtn").click(function() { 
@@ -1456,7 +1452,7 @@ function theme_acecrew_calendar_scheduler($scheduler)
                 sidebar_widget += "<a href=\"#\" onclick=\"alert(1)\">"
                 sidebar_widget += "Update Status"
                 sidebar_widget += "</a>"
-                sidebar_widget += "<a href=\"#\" onclick=\"alert(1)\">"
+                sidebar_widget += "<a href=\"#\" onclick=\"alert(1)\">"    /* Andrey is needed this code to update */
                 sidebar_widget += "Allocated Crew"
                 sidebar_widget += "</a>"
                 sidebar_widget += "</div>"
