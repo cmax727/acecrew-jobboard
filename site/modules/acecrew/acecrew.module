@@ -1471,7 +1471,6 @@ function theme_acecrew_calendar_scheduler($scheduler)
         </script>';
         
     return $output;
-
 }
 
 function theme_acecrew_report_table($report)
