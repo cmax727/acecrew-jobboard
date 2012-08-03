@@ -1394,39 +1394,84 @@ function theme_acecrew_session_totals($totals){
 function theme_acecrew_calendar_scheduler($scheduler)
 {
     $output = '';
-global $base_url;
-global $language_url;
-global $theme_path;
-global $user;
+    global $base_url;
+    global $language_url;
+    global $theme_path;
+    global $user;
+    
     if(empty($scheduler)){
         return '<span class="acecrew_calendar_no_events">' . t('There are no items to display') . '</span>';
     }
-     
+
     $title = '<span class="call-count-title">' . count($scheduler) . ' calls</span>';
     $items = array();
+    $index = 0;
     foreach($scheduler as $event){ 
-        $items[] = array('data' => '<div class="call-first-row"><strong><span class="call-id">' . $event['call_id'] . '</span><span class="call-time">' .  $event['time'] . '</span><span class="call-crew-count">' .  $event['ses_count_crews'] . ' crew</span><span class="call-hours">' .  $event['ses_count_hours'] . ' hours</span></strong></div>
-                                    
-                                    <div class="call-second-row"><span class="call-status"><strong>Call Status:</strong> ' . $event['job_status'] . '</span><span class="call-client"><strong>Client:</strong> ' .  $event['client'] . '</span><span class="call-venue"><strong>Venue:</strong> ' .  $event['venue'] . '</span></div>
-                                    
-                                    <div class="call-third-row"><strong>Skills Required:</strong>'. $event['supplement'] . '</div>
-                                    
-                                    <div class="call-fourth-row"><strong>Crew Names:</strong> ' . $event['crews'] . '</div>
-                                    
-                                    <div class="call-dummy-row"><strong>Node ID:</strong><span>The session node is: ' . $event['nodeid'] . '</span></div>
-                                    
-                                    <div class="call-buttons">  <a href="#" class="loadbtn" id="'.$event['call_id'].'">Load Call</a>
-                                                                <a href="#">Allocate Skills</a>
-                                                                <a href="#" class="smsbtn" onclick="calendar_popup_sms_click('."'$base_url' ,'${event['nodeid']}'". ')">Generate SMS Content</a></div>', 
-                                    
-                         'class' => 'call-listing-item');
+        $items[] = array('data' => '
+            <div class="call-first-row">
+                <strong>
+                    <span class="call-id">' . $event['job_id'] . '</span><span class="call-time">' .  $event['time'] . '</span>
+                    <span class="call-crew-count">' .  $event['ses_count_crews'] . ' crew</span>
+                    <span class="call-hours">' .  $event['ses_count_hours'] . ' hours</span>
+                </strong>
+            </div>
+            <div class="call-second-row">
+                <span class="call-status"><strong>Call Status:</strong> ' . $event['job_status'] . '</span>
+                <span class="call-client"><strong>Client:</strong> ' .  $event['client'] . '</span>
+                <span class="call-venue"><strong>Venue:</strong> ' .  $event['venue'] . '</span>
+            </div>
+            <div class="call-third-row"><strong>Skills Required:</strong>'. $event['supplement'] . '</div>
+            <div class="call-fourth-row"><strong>Crew Names:</strong> ' . $event['crews'] . '</div>
+            <div class="call-buttons">
+                <a href="#" class="loadbtn" id="' . $event['job_id'] . '">Load Call</a>
+                <a href="#">Allocate Skills</a><a href="#">Generate SMS Content</a>
+            </div>', 
+            'class' => 'call-listing-item', 
+            'id' => 'call-listing-item-' . $index++, 
+        );
     }
 
-$dummyhtml='<div class="block-content clear-block prose"><span class="icon-info"></span><p>Click on the load call button at the bottom of each call, to load more information</p></div>';
-$output = theme('item_list', $items, $title, 'ul', array('class' => 'call-listing'));
-$output= $output.'<script>$("#block-block-2").html("'.addslashes($dummyhtml).'"); $(".loadbtn").click(function() { var ID = $(this).attr("id"); $("#block-block-2").html("<div align=\"center\"><img src=\"'.$base_url.'/loader.gif\"></div>"); $("#block-block-2").load("'.$base_url.'/myjob.php?id="+ID); });</script>';
-//$output.'<script>$(".smsbtn").click(function() { var ID = $(this).attr("id"); $("#block-block-2").html("<div align=\"center\"><img src=\"'.$base_url.'/loader.gif\"></div>"); $("#block-block-2").load("'.$base_url.'/myjob.php?id="+ID); });</script>';
-return $output;
+    $dummyhtml='<div class="block-content clear-block prose"><span class="icon-info"></span><p>Click on the load call button at the bottom of each call, to load more information</p></div>';
+    $output = theme('item_list', $items, $title, 'ul', array('class' => 'call-listing'));
+    $output = $output . '
+        <script>
+            $(".loadbtn").click(function() { 
+                var id = $(this).attr("id"); 
+                var item = $(this).parent().parent();
+                var call_id = item.find(".call-id").text();
+                var call_time = item.find(".call-time").text();
+                var call_crew_count = item.find(".call-crew-count").text();
+                var call_hours = item.find(".call-hours").text();
+                var call_status = item.find(".call-status").text();
+                var call_client = item.find(".call-client").text();
+                var call_venue = item.find(".call-venue").text();
+                var sidebar_widget = "<div id=\"sidebar_widget\">";
+                sidebar_widget += "<div>";
+                sidebar_widget += "<span>" + call_id + " / </span>";
+                sidebar_widget += "<span>" + call_time + " / </span>";
+                sidebar_widget += "<span>" + call_crew_count + " / </span>";
+                sidebar_widget += "<span>" + call_hours + "</span>";
+                sidebar_widget += "</div>"
+                sidebar_widget += "<div>";
+                sidebar_widget += "<span>" + call_venue + "</span><br>";
+                sidebar_widget += "<span>" + call_client + "</span><br>";
+                sidebar_widget += "<span>" + call_status + "</span><br>";
+                sidebar_widget += "</div>"
+                sidebar_widget += "<div class=\"call-buttons\">"
+                sidebar_widget += "<a href=\"#\" onclick=\"alert(1)\">"
+                sidebar_widget += "Update Status"
+                sidebar_widget += "</a>"
+                sidebar_widget += "<a href=\"#\" onclick=\"alert(1)\">"
+                sidebar_widget += "Allocated Crew"
+                sidebar_widget += "</a>"
+                sidebar_widget += "</div>"
+                sidebar_widget += "</div>"
+                $("#block-block-2").html(sidebar_widget);
+            });
+        </script>';
+        
+    return $output;
+
 }
 
 function theme_acecrew_report_table($report)
