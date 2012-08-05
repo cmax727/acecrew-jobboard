@@ -540,6 +540,12 @@ ul.nice-menu li.menuparent ul li, ul.nice-menu li.menuparent ul li a {border: 0 
 ul.nice-menu li.menuparent ul li a {display: block; float: none; padding: 8px;}
 
 
+/*create user profile page*/
+#user-profile-form .form-item{ float:left;}
+.profile_title {
+  background: red url(images/heading-bg.png) 0px 0 repeat-x; border-radius: 4px; padding: 6px 10px; border: 0;
+  color:#fff; cursor:pointer;
+  }
 /*create venue page*/
 .page-node #edit-field-venue-name-0-value-wrapper, .page-node #edit-field-venue-email-0-email-wrapper, .page-node #edit-field-venue-telephone-0-value-wrapper, .page-node #edit-field-venue-contact-0-value-wrapper, .page-node #edit-field-venue-contact-telephone-0-value-wrapper, .page-node #edit-field-nearest-station-0-value-wrapper, .page-node #edit-field-venue-post-code-0-value-wrapper, .page-node #edit-field-boundary-round-trip-0-value-wrapper, .page-node #edit-field-boundary-charge-0-value-wrapper {width: 17%; display: inline-block;}
 .page-node #edit-field-boundary-round-trip-0-value-wrapper input, .page-node #edit-field-boundary-charge-0-value-wrapper input {width: 80%;}
