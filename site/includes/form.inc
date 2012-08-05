@@ -521,13 +521,15 @@ function drupal_prepare_form($form_id, &$form, &$form_state) {
       $form['#validate'] = array($form_id .'_validate');
     }
   }
-
+  
+  
   if (!isset($form['#submit'])) {
     if (function_exists($form_id .'_submit')) {
       // We set submit here so that it can be altered.
       $form['#submit'] = array($form_id .'_submit');
     }
   }
+  
 
   // Normally, we would call drupal_alter($form_id, $form, $form_state).
   // However, drupal_alter() normally supports just one byref parameter. Using

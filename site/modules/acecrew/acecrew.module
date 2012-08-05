@@ -1033,12 +1033,16 @@ function acecrew_nodeapi(&$node, $op, $teaser, $page) {
         $jbNum = $row['field_job_number_value'];
         $jbSessionCount = 0;
         
-        $query = "SELECT count(*)+1 cc FROM drupal_content_type_job j
-        JOIN drupal_content_type_job_session s ON j.nid = s.field_session_job_nid_value
-        WHERE j.nid = '%d'";
+        $query = "SELECT count(*)+1 cc, max(field_session_callid_value) mx FROM drupal_content_type_job_session s 
+              WHERE s.field_session_job_nid_value = '%d'";
+              
         $query_result =  db_query($query, $node->nid);
         $row = db_fetch_array($query_result);
         $jbSessionCount = $row['cc'];
+         if ( $jbSessionCount != 0){
+             $jbSessionCount = explode("-", $row['mx']);
+             $jbSessionCount = $jbSessionCount [1] + 1 ;
+         }
     
         $acecrewmodule->setNextJobCallId("$jbNum-$jbSessionCount");
     }
@@ -1077,7 +1081,15 @@ function acecrew_nodeapi(&$node, $op, $teaser, $page) {
             node_delete($ses_nid);
         }
     }
-    
+    //?? sasya 
+    if($node->type == 'job_session' && $op == 'load'){
+        $query = "SELECT field_session_job_nid_value jnid FROM {content_type_job_session} 
+              WHERE nid = '%d'";
+        $query_result =  db_query($query, $node->nid);
+        $row = db_fetch_array($query_result);
+        $client_nid = _acecrew_get_client_nid_by_job_nid($row['jnid']);
+        acecrewmodule::getInstance()->setCurrentClientId($client_nid);
+    }
     if($node->type == 'job_session' && $op == 'view'){        
         $totals = array(
             'total_hours_worked' => 0, 
