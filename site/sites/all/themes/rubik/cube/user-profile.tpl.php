@@ -42,10 +42,13 @@
  */
 ?>
 <?php
-global $user;
-//echo '<pre>'. print_r($account,1);
+$user_view=$_GET;
+$user_view=explode('/',$user_view['q']);
+//echo '<pre>'.print_r($user_view,1);
 
+//echo '<pre>'. print_r($account,1);
 //echo '<pre>';print_r(unserialize($account->data));
+
 $skills=array();
 if($account->profile_crew_skill_new)
 $skills[]='New Crew';
@@ -65,13 +68,27 @@ $(document).ready(function(){
 	$('.profile_item').filter(':first').show();
 
 	$('.profile_title').click(function(){
-		$('.profile_item').hide();
+		$('.profile_item').hide('slow');
 		var id=$(this).attr('title');
-		$('.'+id).show();
+		$('.'+id).show('slow');
 	});
 });
 </script>
+
+<div id='tabs'>
+<div class="page-tabs limiter clear-block" style="width:100%">
+<ul class="links secondary-tabs">
+<li <?php if(!isset($user_view[3]))echo 'class="active"';?>><a href="/user/<?=$account->uid?>/view">Account</a></li>
+<li <?php if(isset($user_view[3]) && $user_view[3]=='Profile Information')echo 'class="active"';?>><a href="/user/<?=$account->uid?>/view/Profile%20Information">Profile Information</a></li>
+<li <?php if(isset($user_view[3]) && $user_view[3]=='Current Activity')echo 'class="active"';?>><a href="/user/<?=$account->uid?>/view/Current%20Activity">Current Activity</a></li>
+<li <?php if(isset($user_view[3]) && $user_view[3]=='Booked Off')echo 'class="active"';?>><a href="/user/<?=$account->uid?>/view/Booked%20Off">Booked Off</a></li>
+</ul>
+</div>
+</div>
+<br />
+
 <div class="profile">
+ <?php if(!isset($user_view[3])){?>
   <h2 class="profile_title" title="account_information">Account Information:</h2>
   <div class="account_information profile_item">
   <div>Username: <?=$account->name?></div>
@@ -79,8 +96,9 @@ $(document).ready(function(){
   <div>Status: <?=$account->status?'Active':'Blocked'?></div>
   <div>Roles: <?php $i=0; foreach($account->roles as $item){ echo $item; if($i<count($account->roles)-1) echo ', ';$i++;}?></div>
   </div>
+  <?php }?>	
   	
-  <br />	
+  <?php if(isset($user_view[3]) && $user_view[3]=='Profile Information'){?>
   <h2 class="profile_title" title="personal_information">Personal Information:</h2>
   <div class="personal_information profile_item">
   <div>Full Name: <?php echo ($account->profile_title?$account->profile_title.' ':'').$account->profile_crew_fullname?></div>
@@ -146,9 +164,22 @@ $(document).ready(function(){
   <div>Length Of Leg: <?=$account->profile_length_leg;?></div>
   <div>Height: <?=$account->profile_crew_height;?></div>
   </div>
-
-
-
+  <?php }?>
+  	
+  <?php if(isset($user_view[3]) && $user_view[3]=='Current Activity'){?>
+  <h2 class="profile_title" title="current_activity">Current Activity:</h2>
+  <div class="current_activity profile_item">
+  <div><?=$account->profile_activity;?></div>
+  </div>
+  <?php }?>
+  	
+  <?php if(isset($user_view[3]) && $user_view[3]=='Booked Off'){?>	
+  <h2 class="profile_title" title="booked_off">Booked Off:</h2>
+  <div class="booked_off profile_item">
+  <div><?=$account->profile_booked;?></div>
+  </div>
+  <?php }?>
+  
 </div>
 
 
