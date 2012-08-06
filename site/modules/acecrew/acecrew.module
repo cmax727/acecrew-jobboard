@@ -674,7 +674,7 @@ function acecrew_calendar_date($date, $forward_days){
     
     /*for ($i = 0; $i <= $forward_days; $i++) {*/
 
-        $query = "SELECT nid, field_session_job_nid_value AS jsnid,  TIME(field_job_session_date_time_value) AS jstime
+        $query = "SELECT vid, nid, field_session_job_nid_value AS jsnid,  TIME(field_job_session_date_time_value) AS jstime
             FROM {content_type_job_session} js 
             WHERE DATE(js.field_job_session_date_time_value) = '%s'
             ORDER BY jstime ASC";
@@ -725,6 +725,7 @@ function acecrew_calendar_date($date, $forward_days){
             $job_status = $job_statuses[$job_status_code];
             
             $scheduler[] = array(
+                'job_session_id' => $row->vid, 
                 'time' => $row->jstime,
                 'venue' => $venue_name,
                 'client' => $client_name,
@@ -1475,6 +1476,7 @@ function theme_acecrew_calendar_scheduler($scheduler, $date)
     foreach($scheduler as $event){ 
         $items[] = array(
             'data' => '
+                <input type="hidden" name="job-session-id-' . $event['job_session_id'] . '" id="job-session-id-' . $event['job_session_id'] . '" value="' . $event['job_session_id'] . '" />
                 <div class="call-first-row">
                     <strong>
                         <span class="call-id">' . $event['call_id'] . '</span>
@@ -1493,12 +1495,12 @@ function theme_acecrew_calendar_scheduler($scheduler, $date)
                 <div class="call-third-row"><strong>Skills Required:</strong>'. $event['supplement'] . '</div>
                 <div class="call-fourth-row"><strong>Crew Names:</strong> ' . $event['crews'] . '</div>
                 <div class="call-buttons">
-                    <a href="#" class="loadbtn" id="'.$event['call_id'].'">Load Call</a>
+                    <a href="#" class="loadbtn" id="'.$event['job_session_id'].'">Load Call</a>
                     <a href="#">Allocate Skills</a>
                     <a href="#" class="smsbtn" onclick="calendar_popup_sms_click('."'$base_url' ,'${event['nodeid']}'". ')">Generate SMS Content</a>
                 </div>', 
             'class' => 'call-listing-item', 
-            'id' => 'call-listing-item-' . $index++, 
+            'id' => 'call-listing-item-' . $event['job_session_id'], 
         );
     }
 
@@ -1518,6 +1520,7 @@ function theme_acecrew_calendar_scheduler($scheduler, $date)
                 var call_client = item.find(".call-client").text();
                 var call_venue = item.find(".call-venue").text();
                 var sidebar_widget = "<div id=\"sidebar_widget\">";
+                sidebar_widget += "<input type=\"hidden\" name=\"job-session-id\" value=\"" + id + "\">";
                 sidebar_widget += "<div>";
                 sidebar_widget += "<span>" + call_id + " / </span>";
                 sidebar_widget += "<span>" + call_time + " / </span>";
