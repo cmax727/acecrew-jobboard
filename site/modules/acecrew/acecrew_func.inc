@@ -18,6 +18,7 @@ class acecrewmodule {
         }
         return self::$instance;
     }
+   
     
     public function getCurrentJobId()
     {
@@ -28,7 +29,7 @@ class acecrewmodule {
     {
         return $this->currentClientId;
     }
-
+     //saf added
     public function getNextJobCallId()
     {
         return $this->nextJobCallId;
@@ -43,13 +44,27 @@ class acecrewmodule {
     {
         $this->currentClientId = $id;
     }
-    
+     //saf added
     public function setNextJobCallId($callId)
     {
         $this->nextJobCallId = $callId;
     }
+    
+     
 }
-
+//saf added
+function _acecrew_get_jobclient_contacts(){
+    $curClientId = acecrewmodule::getInstance()->getCurrentClientId();
+    
+    $client = node_load($curClientId);
+    
+    $contacts = array();
+    foreach($client->field_client_contact as $contact){
+        $contacts[$contact['item_id']] = $contact['value']['field_client_contact_name']['0']['value'];
+    }
+    return $contacts;
+}
+     
 function _acecrew_get_assigned_job_sessions_iterator($nid){
     $query = "SELECT js.nid FROM {content_type_job_session} js
         JOIN {node} n ON js.field_session_job_nid_value = n.nid

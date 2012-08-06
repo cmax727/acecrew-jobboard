@@ -540,6 +540,18 @@ ul.nice-menu li.menuparent ul li, ul.nice-menu li.menuparent ul li a {border: 0 
 ul.nice-menu li.menuparent ul li a {display: block; float: none; padding: 8px;}
 
 
+/*create user profile page*/
+#user-profile-form .form-item{ float:left;}
+.profile_title {
+  background: red url(images/heading-bg.png) 0px 0 repeat-x; border-radius: 4px; padding: 6px 10px; border: 0;
+  color:#fff; cursor:pointer;
+  }
+#edit-pass-pass1-wrapper,#edit-pass-pass2-wrapper{width:162px;padding:0;}  
+select.form-select {padding: 5px 10px!important;}
+#edit-profile-crew-dob-wrapper label,#edit-profile-visa-start-wrapper label,#edit-profile-visa-end-date-wrapper label{padding-left:5px;}
+#edit-profile-crew-dob-day-wrapper,#edit-profile-crew-dob-month-wrapper,#edit-profile-crew-dob-year-wrapper,#edit-profile-visa-start-day-wrapper,#edit-profile-visa-start-month-wrapper,#edit-profile-visa-start-year-wrapper,#edit-profile-visa-end-date-day-wrapper,#edit-profile-visa-end-date-month-wrapper,#edit-profile-visa-end-date-year-wrapper{ padding-top:0;}
+#edit-profile-crew-skills-chief-wrapper,#edit-profile-crew-skills-driver-wrapper,#edit-profile-crew-skill-new-wrapper,#edit-profile-crew-skills-cherry-wrapper,#edit-profile-crew-skills-forklift-wrapper{padding-top:30px;}
+#edit-profile-crew-dob-wrapper,#edit-profile-visa-start-wrapper,#edit-profile-visa-end-date-wrapper{ padding-left:0; padding-right:0;}
 /*create venue page*/
 .page-node #edit-field-venue-name-0-value-wrapper, .page-node #edit-field-venue-email-0-email-wrapper, .page-node #edit-field-venue-telephone-0-value-wrapper, .page-node #edit-field-venue-contact-0-value-wrapper, .page-node #edit-field-venue-contact-telephone-0-value-wrapper, .page-node #edit-field-nearest-station-0-value-wrapper, .page-node #edit-field-venue-post-code-0-value-wrapper, .page-node #edit-field-boundary-round-trip-0-value-wrapper, .page-node #edit-field-boundary-charge-0-value-wrapper {width: 17%; display: inline-block;}
 .page-node #edit-field-boundary-round-trip-0-value-wrapper input, .page-node #edit-field-boundary-charge-0-value-wrapper input {width: 80%;}

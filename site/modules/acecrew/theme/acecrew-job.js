@@ -7,6 +7,7 @@ function acecrew_session_edit(ses_id)
     $('#acecrew_session_buttons_' + ses_id).hide('fast');
     $('.acecrew_session_add_block').hide('fast');
     $('#acecrew_session_form_' + ses_id).show('fast');
+    $('#' + acecrew_current_edit_item + "  form").attr("action", "/node/" + ses_id +"/edit");
 }
 
 function acecrew_session_del(ses_id)
