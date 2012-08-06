@@ -639,6 +639,9 @@ function acecrew_calendar(){
     );
     drupal_add_js(array('acecrew' => $my_settings), "setting");
     
+    /*drupal_add_js(drupal_get_path('module', 'acecrew') . '/theme/jquery.js');
+    drupal_add_js(drupal_get_path('module', 'acecrew') . '/theme/jquery-ui.min.js.js');
+    drupal_add_js(drupal_get_path('module', 'acecrew') . '/theme/ui.spinner.js');*/
     drupal_add_js(drupal_get_path('module', 'acecrew') . '/theme/acecrew-calendar.js');
     drupal_add_css(drupal_get_path('module', 'acecrew') . '/theme/acecrew_session_crew_statused_name_colours.css', 'module', 'all', false);
     
@@ -654,77 +657,95 @@ function acecrew_calendar(){
     return $output;
 }
 
-function acecrew_calendar_date($date){
-    $query = "SELECT nid, field_session_job_nid_value AS jsnid,  TIME(field_job_session_date_time_value) AS jstime
-        FROM {content_type_job_session} js 
-        WHERE DATE(js.field_job_session_date_time_value) = '%s'
-        ORDER BY jstime ASC";
-    $query_result =  db_query($query, $date);
-    $scheduler = array();
-    $job_statuses = array('1' => 'Pencil', '2' => 'Confirmed', '3' => 'Cancel');
-    while ($row = db_fetch_object($query_result)) {
-        
-        $job = node_load(array('nid' => $row->jsnid));
-        $client = acecrew_get_client_by_id($job->field_job_client_name[0]['value']);
-        $client_name = $client->field_client_name[0]['value'];
-        $venue = acecrew_get_venue_by_id($job->field_job_venue[0]['value']);
-        $venue_name = $venue->field_venue_name[0]['value'];
-        $crew_suppl = $session_node->field_call_supplements[0]['value'];
-        
-        
-        $session_node = node_load(array('nid' => $row->nid));
-        $ses_callid = $session_node->field_session_callid[0]['value'];
-        $ses_count_crews = $session_node->field_job_session_crew[0]['value'];
-        $ses_count_hours = $session_node->field_job_session_hours[0]['value'];
-        
-        
-        $node_id = $session_node->nid;
-        
-        $crews = '';
-        foreach($session_node->field_job_session_crews as $ses_crew){
-            $crew_name = $ses_crew['value']['field_crew_job_session_name'][0]['value'];
-            $crew_status = $ses_crew['value']['field_crew_job_session_status'][0]['value'];
-            $user = user_load(array('uid' => $crew_name));
-            $crew_name = $user->name;
-            $crews .= '<li class="session_crew_statused_name_' . $crew_status . '">' . $crew_name . '</li>';
-        }
-        
-        $supp_name = '';
-        foreach($session_node->field_call_supplements as $item) {
-        $supp_node = node_load($item['nid']);
-        $supp_title = $supp_node->title;
-         $supp_name .= '<span>' . $supp_title . '</span>';
-        }
-        
-         
-        
-        $supps =  $supp_name;
-        
-        $crews = '<ul class="crew_statuses_ul">' . $crews . '</ul>';
-        
-        $job_status_code = $job->field_job_status[0]['value'];
-        $job_status = $job_statuses[$job_status_code];
-        
-        $scheduler[] = array(
-            'time' => $row->jstime,
-            'venue' => $venue_name,
-            'client' => $client_name,
-            'job_id' => $job->field_job_number[0]['value'],
-            'call_id' => $ses_callid, 
-            'job_ref' => $job->path,
-            'job_status_code' => $job_status_code,
-            'job_status' => $job_status,
-            'ses_count_crews' => $ses_count_crews,
-            'ses_count_hours' => $ses_count_hours,
-            'crews' => $crews,
-            'supplement' => $supps,
-            'nodeid' => $node_id
-             
-        );
-        
-    }
+function addDayswithdate($date,$days){
+
+    $date = strtotime("+".$days." days", strtotime($date));
+    return  date("Y-m-d", $date);
+
+}
+
+
+function acecrew_calendar_date($date, $forward_days){
+    $forward_days = isset($forward_days) ? $forward_days : 0;
+    $date = date($date);
+    $date = strtotime("+".$forward_days." days", strtotime($date));
+    $date = date("Y-m-d", $date);
+    $html = '';
     
-    $html = theme('acecrew_calendar_scheduler', $scheduler);
+    /*for ($i = 0; $i <= $forward_days; $i++) {*/
+
+        $query = "SELECT nid, field_session_job_nid_value AS jsnid,  TIME(field_job_session_date_time_value) AS jstime
+            FROM {content_type_job_session} js 
+            WHERE DATE(js.field_job_session_date_time_value) = '%s'
+            ORDER BY jstime ASC";
+        $query_result =  db_query($query, $date);
+        $scheduler = array();
+        $job_statuses = array('1' => 'Pencil', '2' => 'Confirmed', '3' => 'Cancel');
+        while ($row = db_fetch_object($query_result)) {
+            
+            $job = node_load(array('nid' => $row->jsnid));
+            $client = acecrew_get_client_by_id($job->field_job_client_name[0]['value']);
+            $client_name = $client->field_client_name[0]['value'];
+            $venue = acecrew_get_venue_by_id($job->field_job_venue[0]['value']);
+            $venue_name = $venue->field_venue_name[0]['value'];
+            $crew_suppl = $session_node->field_call_supplements[0]['value'];
+            
+            
+            $session_node = node_load(array('nid' => $row->nid));
+            $ses_callid = $session_node->field_session_callid[0]['value'];
+            $ses_count_crews = $session_node->field_job_session_crew[0]['value'];
+            $ses_count_hours = $session_node->field_job_session_hours[0]['value'];
+            
+            
+            $node_id = $session_node->nid;
+            
+            $crews = '';
+            foreach($session_node->field_job_session_crews as $ses_crew){
+                $crew_name = $ses_crew['value']['field_crew_job_session_name'][0]['value'];
+                $crew_status = $ses_crew['value']['field_crew_job_session_status'][0]['value'];
+                $user = user_load(array('uid' => $crew_name));
+                $crew_name = $user->name;
+                $crews .= '<li class="session_crew_statused_name_' . $crew_status . '">' . $crew_name . '</li>';
+            }
+            
+            $supp_name = '';
+            foreach($session_node->field_call_supplements as $item) {
+            $supp_node = node_load($item['nid']);
+            $supp_title = $supp_node->title;
+             $supp_name .= '<span>' . $supp_title . '</span>';
+            }
+            
+             
+            
+            $supps =  $supp_name;
+            
+            $crews = '<ul class="crew_statuses_ul">' . $crews . '</ul>';
+            
+            $job_status_code = $job->field_job_status[0]['value'];
+            $job_status = $job_statuses[$job_status_code];
+            
+            $scheduler[] = array(
+                'time' => $row->jstime,
+                'venue' => $venue_name,
+                'client' => $client_name,
+                'job_id' => $job->field_job_number[0]['value'],
+                'call_id' => $ses_callid, 
+                'job_ref' => $job->path,
+                'job_status_code' => $job_status_code,
+                'job_status' => $job_status,
+                'ses_count_crews' => $ses_count_crews,
+                'ses_count_hours' => $ses_count_hours,
+                'crews' => $crews,
+                'supplement' => $supps,
+                'nodeid' => $node_id
+                 
+            );
+            
+        }
+        
+        $html .= theme('acecrew_calendar_scheduler', $scheduler, $date);
+        /*$date++;*/
+    /*}*/
     drupal_json(array('html' => $html));
 }
 
@@ -986,8 +1007,21 @@ function acecrew_calendar_form(){
         '#title' => t('Select date'),
         '#date_format' => 'Y-m-d',
         '#default_value' => date ("Y-m-d"),
-        '#attribute' => array('id' => 'acecrew_calendar_date'),
+        '#attributes' => array('id' => 'acecrew_calendar_date'),
     );
+    
+    $form['date']['forward_days'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Froward Days'),
+        '#attributes' => array('id' => 'acecrew_calendar_forward_days'),
+    );
+    
+    $form['date']['submit'] = array(
+        '#type' => 'button',
+        '#value' => t('Submit'), 
+        '#attributes' => array('id' => 'acecrew_calendar_submit'),
+    );
+    
     return $form;
 }
 
@@ -1391,7 +1425,17 @@ function theme_acecrew_session_totals($totals){
 
 }
 
-function theme_acecrew_calendar_scheduler($scheduler)
+function getDateFormat($date) {
+    $dd = explode('-', $date);
+    $d = date("d", mktime(0, 0, 0, $dd[1], $dd[2], $dd[0]));
+    $m = date("F", mktime(0, 0, 0, $dd[1], $dd[2], $dd[0]));
+    $w = date("l", mktime(0, 0, 0, $dd[1], $dd[2], $dd[0]));
+    
+    return $d . 'th ' . $m . ' - ' . $w;
+    
+}
+
+function theme_acecrew_calendar_scheduler($scheduler, $date)
 {
     $output = '';
     global $base_url;
@@ -1400,10 +1444,13 @@ function theme_acecrew_calendar_scheduler($scheduler)
     global $user;
     
     if(empty($scheduler)){
-        return '<span class="acecrew_calendar_no_events">' . t('There are no items to display') . '</span>';
+        return '<div class="item-list">
+                    <h3><span class="call-date">' . getDateFormat($date) . '&nbsp;</span><span class="call-count-title">0 calls</span></h3>
+                    <span class="acecrew_calendar_no_events">' . t('There are no items to display') . '</span>
+                </div>';
     }
-
-    $title = '<span class="call-count-title">' . count($scheduler) . ' calls</span>';
+    
+    $title = '<span class="call-date">' . getDateFormat($date) . '&nbsp;</span><span class="call-count-title">' . count($scheduler) . ' calls</span>';
     $items = array();
     $index = 0;
     foreach($scheduler as $event){ 
