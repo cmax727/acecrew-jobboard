@@ -1466,15 +1466,30 @@ function theme_acecrew_calendar_scheduler($scheduler, $date)
     $items = array();
     $index = 0;
     foreach($scheduler as $event){ 
-        $items[] = array('data' => '
-            <div class="call-first-row"><strong><span class="call-id">' . $event['call_id'] . '</span><span class="call-time">' .  $event['time'] . '</span><span class="call-crew-count">' .  $event['ses_count_crews'] . ' crew</span><span class="call-hours">' .  $event['ses_count_hours'] . ' hours</span></strong></div>
-            <div class="call-second-row"><span class="call-status"><strong>Call Status:</strong> ' . $event['job_status'] . '</span><span class="call-client"><strong>Client:</strong> ' .  $event['client'] . '</span><span class="call-venue"><strong>Venue:</strong> ' .  $event['venue'] . '</span></div>
-            <div class="call-third-row"><strong>Skills Required:</strong>'. $event['supplement'] . '</div>
-            <div class="call-fourth-row"><strong>Crew Names:</strong> ' . $event['crews'] . '</div>
-            <div class="call-dummy-row"><strong>Node ID:</strong><span>The session node is: ' . $event['nodeid'] . '</span></div>
-            <div class="call-buttons">  <a href="#" class="loadbtn" id="'.$event['call_id'].'">Load Call</a>
-            <a href="#">Allocate Skills</a>
-            <a href="#" class="smsbtn" onclick="calendar_popup_sms_click('."'$base_url' ,'${event['nodeid']}'". ')">Generate SMS Content</a></div>', 
+        $items[] = array(
+            'data' => '
+                <div class="call-first-row">
+                    <strong>
+                        <span class="call-id">' . $event['call_id'] . '</span>
+                        <span class="call-time">' .  $event['time'] . '</span>
+                        <span class="call-crew-count">' .  $event['ses_count_crews'] . ' crew</span>
+                        <span class="call-hours">' .  $event['ses_count_hours'] . ' hours</span>
+                    </strong>
+                </div>
+                <div class="call-second-row">
+                    <span class="call-status">
+                        <strong>Call Status:</strong> ' . $event['job_status'] . '
+                    </span>
+                    <span class="call-client"><strong>Client:</strong> ' .  $event['client'] . '</span>
+                    <span class="call-venue"><strong>Venue:</strong> ' .  $event['venue'] . '</span>
+                </div>
+                <div class="call-third-row"><strong>Skills Required:</strong>'. $event['supplement'] . '</div>
+                <div class="call-fourth-row"><strong>Crew Names:</strong> ' . $event['crews'] . '</div>
+                <div class="call-dummy-row"><strong>Node ID:</strong><span>The session node is: ' . $event['nodeid'] . '</span></div>
+                <div class="call-buttons">  <a href="#" class="loadbtn" id="'.$event['call_id'].'">Load Call</a>
+                    <a href="#">Allocate Skills</a>
+                    <a href="#" class="smsbtn" onclick="calendar_popup_sms_click('."'$base_url' ,'${event['nodeid']}'". ')">Generate SMS Content</a>
+                </div>', 
             'class' => 'call-listing-item', 
             'id' => 'call-listing-item-' . $index++, 
         );
@@ -1517,8 +1532,8 @@ function theme_acecrew_calendar_scheduler($scheduler, $date)
                 sidebar_widget += "</div>"
                 sidebar_widget += "</div>"
                 $("#block-block-2").html(sidebar_widget);
-                $("#block-block-2").hide(1);
-                $("#block-block-2").show(1000);
+                $("#block-block-2").fadeOut(1);
+                $("#block-block-2").fadeIn(1500);
             });
         </script>';
         
