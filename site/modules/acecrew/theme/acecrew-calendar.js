@@ -19,7 +19,7 @@ $(document).ready(function() {
     // added by anton    
     $('#edit-date-submit').click(function() {
         $("#acecrew_calendar_output").html('<img class="loading-gif" src="' + Drupal.settings.basePath + Drupal.settings.acecrew.basepath + '/theme/ajax-loader.gif" />');
-        forward = $('#edit-date-forward-days').val();
+        forward = $('#acecrew_calendar_forward_days').val();
         $.get(Drupal.settings.basePath + "acecrew/calendar/" + $('#edit-date-timer-datepicker-popup-0').val() + "/" + forward, function(data){
             var result = Drupal.parseJson(data);
             $("#acecrew_calendar_output").html(result.html);
@@ -27,4 +27,5 @@ $(document).ready(function() {
     });
     
     $('#edit-date-timer-datepicker-popup-0').trigger('change');
+    
 });

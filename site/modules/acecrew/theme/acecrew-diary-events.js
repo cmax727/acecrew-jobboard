@@ -1,4 +1,4 @@
-calendar_popup_sms_click = function(baseurl,call_nid){
+var calendar_popup_sms_click = function(baseurl,call_nid){
     $url = baseurl + "/acecrew/calendar-popup/sms/" + call_nid;
     options = {
         url : $url,
