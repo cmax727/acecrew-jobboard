@@ -4,7 +4,7 @@
  * Implementation of Sons of Suckerfish Dropdowns.
  * @see www.htmldog.com/articles/suckerfish
  **/
-#admin-menu { position: absolute; top: 0px; left: 0px; font-size: 9px; font-family: "lucida grande", tahoma, verdana, arial, sans-serif; background: url(images/bkg.png) bottom left repeat-x #101010; width: 100%; text-align: left; }
+#admin-menu { position: absolute; top: 0px; left: 0px; font-size: 11px; font-family: "lucida grande", tahoma, verdana, arial, sans-serif; background: url(images/bkg.png) bottom left repeat-x #101010; width: 100%; text-align: left; }
 #admin-menu li.admin-menu-icon a { padding: 1px 8px 4px; }
 #admin-menu li.admin-menu-icon ul a { padding: 4px 8px; }
 #admin-menu li.admin-menu-icon img { vertical-align: bottom; }

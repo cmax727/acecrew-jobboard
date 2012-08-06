@@ -1517,6 +1517,8 @@ function theme_acecrew_calendar_scheduler($scheduler, $date)
                 sidebar_widget += "</div>"
                 sidebar_widget += "</div>"
                 $("#block-block-2").html(sidebar_widget);
+                $("#block-block-2").hide(1);
+                $("#block-block-2").show(1000);
             });
         </script>';
         
