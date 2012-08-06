@@ -1520,7 +1520,7 @@ function theme_acecrew_calendar_scheduler($scheduler, $date)
                 var call_client = item.find(".call-client").text();
                 var call_venue = item.find(".call-venue").text();
                 var sidebar_widget = "<div id=\"sidebar_widget\">";
-                sidebar_widget += "<input type=\"hidden\" name=\"job-session-id\" value=\"" + id + "\">";
+                sidebar_widget += "<input type=\"hidden\" name=\"job-session-id\" id=\"job-session-id\" value=\"" + id + "\">";
                 sidebar_widget += "<div>";
                 sidebar_widget += "<span>" + call_id + " / </span>";
                 sidebar_widget += "<span>" + call_time + " / </span>";
