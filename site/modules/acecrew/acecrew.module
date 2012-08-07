@@ -1509,6 +1509,11 @@ function theme_acecrew_calendar_scheduler($scheduler, $date)
 
     $output = $output . '
         <script>
+            function onSubmitCallbackExample()
+            {
+                //alert("adgfadsfasdfasdfasd");
+                // window.location.reload(); 
+            }
             $(".loadbtn").click(function() {
                 var id = $(this).attr("id"); 
                 var item = $(this).parent().parent();
@@ -1531,16 +1536,17 @@ function theme_acecrew_calendar_scheduler($scheduler, $date)
                 sidebar_widget += "<span>" + call_venue + "</span><br>";
                 sidebar_widget += "<span>" + call_client + "</span><br>";
                 sidebar_widget += "<span>" + call_status + "</span><br>";
-                sidebar_widget += "</div>";
-                sidebar_widget += "<div class=\"call-buttons\">";
-                sidebar_widget += "<a href=\"#\" onclick=\"alert(1)\">";
-                sidebar_widget += "Update Status";
-                sidebar_widget += "</a>";
-                sidebar_widget += "<a href=\"#\" onclick=\"alert(1)\">";
-                sidebar_widget += "Allocated Crew";
-                sidebar_widget += "</a>";
-                sidebar_widget += "</div>";
-                sidebar_widget += "</div>";
+                sidebar_widget += "</div>"
+                sidebar_widget += "<div class=\"call-buttons\">"
+                sidebar_widget += "<a href=\"#\" onclick=\"alert(1)\">"
+                sidebar_widget += "Update Status"
+                sidebar_widget += "</a>"
+                
+                sidebar_widget += "<a href=\"#\" onclick=\"Drupal.modalFrame.open({url: \'crew-allocation/" + id + "/" + call_id + "/0/All\', onSubmit: onSubmitCallbackExample})\">"
+                sidebar_widget += "Allocated Crew"
+                sidebar_widget += "</a>"
+                sidebar_widget += "</div>"
+                sidebar_widget += "</div>"
                 $("#block-block-2").html(sidebar_widget);
                 $("#block-block-2").fadeOut(1);
                 $("#block-block-2").fadeIn(1500);
