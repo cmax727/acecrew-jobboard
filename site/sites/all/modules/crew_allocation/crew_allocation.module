@@ -40,6 +40,7 @@ function crew_allocation_menu() {
  */
 function crew_allocation_page($first, $second)
 {
+    drupal_add_js(drupal_get_path('module', 'crew_allocation') . '/crew_allocation.js');
     return drupal_get_form('_crew_allocation_top_form', $first, $second);
 }
 
@@ -112,8 +113,8 @@ function _crew_allocation_top_form(&$form_state) {
     
     $form['update'] = array(
         // '#type' => 'submit',
-        '#type' => 'submit',
-        '#value' => t('Update'),
+        '#type' => 'item',
+        '#value' => t('<a id="edit-update" href="#">Update</a>'),
     );
     
     return $form;

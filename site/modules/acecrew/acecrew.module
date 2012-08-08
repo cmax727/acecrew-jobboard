@@ -674,7 +674,7 @@ function acecrew_calendar_date($date, $forward_days){
     
     /*for ($i = 0; $i <= $forward_days; $i++) {*/
 
-        $query = "SELECT vid, nid, field_session_job_nid_value AS jsnid,  TIME(field_job_session_date_time_value) AS jstime
+        $query = "SELECT vid, nid, field_session_callid_value AS cid, field_session_job_nid_value AS jsnid,  TIME(field_job_session_date_time_value) AS jstime
             FROM {content_type_job_session} js 
             WHERE DATE(js.field_job_session_date_time_value) = '%s'
             ORDER BY jstime ASC";
@@ -724,6 +724,18 @@ function acecrew_calendar_date($date, $forward_days){
             $job_status_code = $job->field_job_status[0]['value'];
             $job_status = $job_statuses[$job_status_code];
             
+            $crew_members = array();
+            
+            $query1 =  "SELECT users.name as name
+                        FROM {users} as users, {crew_call} as call 
+                        WHERE users.uid = call.uid 
+                        AND call.cid = %s AND call.jsid = %s;";
+            $query_result1 =  db_query($query1, $row->cid, $row->vid);
+            while ($row = db_fetch_array($query_result1)) {
+                $crew_members[] = $row->name;    
+            }
+
+            
             $scheduler[] = array(
                 'job_session_id' => $row->vid, 
                 'time' => $row->jstime,
@@ -738,7 +750,8 @@ function acecrew_calendar_date($date, $forward_days){
                 'ses_count_hours' => $ses_count_hours,
                 'crews' => $crews,
                 'supplement' => $supps,
-                'nodeid' => $node_id
+                'nodeid' => $node_id, 
+                'crew_members' => $crew_members, 
                  
             );
             
@@ -1547,8 +1560,8 @@ function theme_acecrew_calendar_scheduler($scheduler, $date)
                 sidebar_widget += "</a>"
                 sidebar_widget += "</div>"
                 sidebar_widget += "</div>"
-                $("#block-block-2").html(sidebar_widget);
                 $("#block-block-2").fadeOut(1);
+                $("#block-block-2").html(sidebar_widget);
                 $("#block-block-2").fadeIn(1500);
             });
         </script>';
