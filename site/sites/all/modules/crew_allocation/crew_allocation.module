@@ -113,8 +113,8 @@ function _crew_allocation_top_form(&$form_state) {
     
     $form['update'] = array(
         // '#type' => 'submit',
-        '#type' => 'item',
-        '#value' => t('<a id="edit-update" href="#">Update</a>'),
+        '#type' => 'submit',
+        '#value' => t('Update'),
     );
     
     return $form;
