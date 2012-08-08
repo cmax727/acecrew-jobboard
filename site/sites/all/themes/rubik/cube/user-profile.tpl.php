@@ -64,14 +64,14 @@ $skills[]='Forklift Driver';
 
 <script type="text/javascript">
 $(document).ready(function(){
-	$('.profile_item').hide();
-	$('.profile_item').filter(':first').show();
+    $('.profile_item').hide();
+    $('.profile_item').filter(':first').show();
 
-	$('.profile_title').click(function(){
-		$('.profile_item').hide('slow');
-		var id=$(this).attr('title');
-		$('.'+id).show('slow');
-	});
+    $('.profile_title').click(function(){
+        $('.profile_item').hide('slow');
+        var id=$(this).attr('title');
+        $('.'+id).show('slow');
+    });
 });
 </script>
 
@@ -79,9 +79,9 @@ $(document).ready(function(){
 <div class="page-tabs limiter clear-block" style="width:100%">
 <ul class="links secondary-tabs">
 <li <?php if(!isset($user_view[3]))echo 'class="active"';?>><a href="/user/<?=$account->uid?>/view">Account</a></li>
-<li <?php if(isset($user_view[3]) && $user_view[3]=='Profile Information')echo 'class="active"';?>><a href="/user/<?=$account->uid?>/view/Profile%20Information">Profile Information</a></li>
-<li <?php if(isset($user_view[3]) && $user_view[3]=='Current Activity')echo 'class="active"';?>><a href="/user/<?=$account->uid?>/view/Current%20Activity">Current Activity</a></li>
-<li <?php if(isset($user_view[3]) && $user_view[3]=='Booked Off')echo 'class="active"';?>><a href="/user/<?=$account->uid?>/view/Booked%20Off">Booked Off</a></li>
+<li <?php if(isset($user_view[3]) && $user_view[3]=='profile-information')echo 'class="active"';?>><a href="/user/<?=$account->uid?>/view/profile-information">Profile Information</a></li>
+<li <?php if(isset($user_view[3]) && $user_view[3]=='current-activity')echo 'class="active"';?>><a href="/user/<?=$account->uid?>/view/current-activity">Current Activity</a></li>
+<li <?php if(isset($user_view[3]) && $user_view[3]=='booked-off')echo 'class="active"';?>><a href="/user/<?=$account->uid?>/view/booked-off">Booked Off</a></li>
 </ul>
 </div>
 </div>
@@ -96,9 +96,9 @@ $(document).ready(function(){
   <div>Status: <?=$account->status?'Active':'Blocked'?></div>
   <div>Roles: <?php $i=0; foreach($account->roles as $item){ echo $item; if($i<count($account->roles)-1) echo ', ';$i++;}?></div>
   </div>
-  <?php }?>	
-  	
-  <?php if(isset($user_view[3]) && $user_view[3]=='Profile Information'){?>
+  <?php }?>    
+      
+  <?php if(isset($user_view[3]) && $user_view[3]=='profile-information'){?>
   <h2 class="profile_title" title="personal_information">Personal Information:</h2>
   <div class="personal_information profile_item">
   <div>Full Name: <?php echo ($account->profile_title?$account->profile_title.' ':'').$account->profile_crew_fullname?></div>
@@ -112,7 +112,7 @@ $(document).ready(function(){
   <div>Emergency Telephone: <?=$account->profile_crew_nok_telephone;?></div>
   </div>
   
-  <br />	
+  <br />    
   <h2 class="profile_title" title="contact_information">Contact Information:</h2>
   <div class="contact_information profile_item">  
   <div>Telephone: <?=$account->profile_crew_telephone;?></div>
@@ -120,34 +120,34 @@ $(document).ready(function(){
   <div>Nearest Station/Tube: <?=$account->profile_crew_mobile;?></div>
   </div>
 
-  <br />	
+  <br />    
   <h2 class="profile_title" title="crew_skills">Crew Skills:</h2>
   <div class="crew_skills profile_item">
   <div><?php $i=0; foreach($skills as $item){ echo $item; if($i<count($skills)-1) echo ', ';$i++;}?></div>
   <!--<div>Pay Rate: <?=$account->profile_crew_mobile;?></div>-->
   </div>
 
-  <br />	
+  <br />    
   <h2 class="profile_title" title="employment_type">Employment Type:</h2>
   <div class="employment_type profile_item">
   <div><?=$account->profile_employment_type;?></div>
   </div>
   
-  <br />	
+  <br />    
   <h2 class="profile_title" title="miscellaneous">Miscellaneous:</h2>
   <div class="miscellaneous profile_item">
   <div>Notes: <?=$account->profile_notes;?></div>
   <div>Strength: <?=$account->profile_strength;?></div>
   </div>
 
-  <br />	
+  <br />    
   <h2 class="profile_title" title="passport" >Passport & Licence:</h2>
   <div class="passport profile_item">
   <div>Passport Number: <?=$account->profile_passport_number;?></div>
   <div>Licence Number: <?=$account->profile_licence;?></div>
   </div>
 
-  <br />	
+  <br />    
   <h2 class="profile_title" title="visa_details">Visa Details:</h2>
   <div class="visa_details profile_item">
   <div>Visa Type: <?=$account->profile_visa_type;?></div>
@@ -156,7 +156,7 @@ $(document).ready(function(){
   </div>
 
 
-  <br />	
+  <br />    
   <h2 class="profile_title" title="crew_sizes">Crew Sizes:</h2>
   <div class="crew_sizes profile_item">
   <div>Shirt Size: <?=$account->profile_crew_shirt;?></div>
@@ -165,15 +165,15 @@ $(document).ready(function(){
   <div>Height: <?=$account->profile_crew_height;?></div>
   </div>
   <?php }?>
-  	
+      
   <?php if(isset($user_view[3]) && $user_view[3]=='Current Activity'){?>
   <h2 class="profile_title" title="current_activity">Current Activity:</h2>
   <div class="current_activity profile_item">
   <div><?=$account->profile_activity;?></div>
   </div>
   <?php }?>
-  	
-  <?php if(isset($user_view[3]) && $user_view[3]=='Booked Off'){?>	
+      
+  <?php if(isset($user_view[3]) && $user_view[3]=='Booked Off'){?>    
   <h2 class="profile_title" title="booked_off">Booked Off:</h2>
   <div class="booked_off profile_item">
   <div><?=$account->profile_booked;?></div>
