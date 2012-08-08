@@ -674,7 +674,7 @@ function acecrew_calendar_date($date, $forward_days){
     
     /*for ($i = 0; $i <= $forward_days; $i++) {*/
 
-        $query = "SELECT nid, field_session_job_nid_value AS jsnid,  TIME(field_job_session_date_time_value) AS jstime
+        $query = "SELECT vid, nid, field_session_callid_value AS cid, field_session_job_nid_value AS jsnid,  TIME(field_job_session_date_time_value) AS jstime
             FROM {content_type_job_session} js 
             WHERE DATE(js.field_job_session_date_time_value) = '%s'
             ORDER BY jstime ASC";
@@ -699,13 +699,13 @@ function acecrew_calendar_date($date, $forward_days){
             
             $node_id = $session_node->nid;
             
-            $crews = '';
+            $crews = array();
             foreach($session_node->field_job_session_crews as $ses_crew){
                 $crew_name = $ses_crew['value']['field_crew_job_session_name'][0]['value'];
                 $crew_status = $ses_crew['value']['field_crew_job_session_status'][0]['value'];
                 $user = user_load(array('uid' => $crew_name));
                 $crew_name = $user->name;
-                $crews .= '<li class="session_crew_statused_name_' . $crew_status . '">' . $crew_name . '</li>';
+                //$crews .= '<li class="session_crew_statused_name_' . $crew_status . '">' . $crew_name . '</li>';
             }
             
             $supp_name = '';
@@ -719,12 +719,23 @@ function acecrew_calendar_date($date, $forward_days){
             
             $supps =  $supp_name;
             
-            $crews = '<ul class="crew_statuses_ul">' . $crews . '</ul>';
+            //$crews = '<ul class="crew_statuses_ul">' . $crews . '</ul>';
             
             $job_status_code = $job->field_job_status[0]['value'];
             $job_status = $job_statuses[$job_status_code];
             
+            
+            $query1 =  "SELECT u.name FROM {users} u WHERE u.uid IN (SELECT uid FROM {crew_call} WHERE cid='%s' AND jsid='%s');";
+            $query_result1 =  db_query($query1, $row->cid, $row->vid);
+            while ($row1 = db_fetch_object($query_result1)) {
+                $crews[] = $row1->name;    
+            }
+            
+            //$crews = array('Anton', 'Anton K');
+
+            
             $scheduler[] = array(
+                'job_session_id' => $row->vid, 
                 'time' => $row->jstime,
                 'venue' => $venue_name,
                 'client' => $client_name,
@@ -737,7 +748,7 @@ function acecrew_calendar_date($date, $forward_days){
                 'ses_count_hours' => $ses_count_hours,
                 'crews' => $crews,
                 'supplement' => $supps,
-                'nodeid' => $node_id
+                'nodeid' => $node_id, 
                  
             );
             
@@ -1011,8 +1022,15 @@ function acecrew_calendar_form(){
     );
     
     $form['date']['forward_days'] = array(
-        '#type' => 'textfield',
+        '#type' => 'select',
         '#title' => t('Froward Days'),
+        '#options' => array(
+            0=>0,
+            1=>1, 2=>2, 3=>3, 4=>4, 5=>5, 6=>6, 7=>7, 8=>8, 9=>9, 10=>10, 
+            11=>11, 12=>12, 13=>13, 14=>14, 15=>15, 16=>16, 17=>17, 18=>18, 19=>19, 20=>20, 
+            21=>21, 22=>22, 23=>23, 24=>24, 25=>25, 26=>26, 27=>27, 28=>28, 29=>29, 30=>30, 
+            31=>31
+        ),
         '#attributes' => array('id' => 'acecrew_calendar_forward_days'),
     );
     
@@ -1465,9 +1483,18 @@ function theme_acecrew_calendar_scheduler($scheduler, $date)
     $title = '<span class="call-date">' . getDateFormat($date) . '&nbsp;</span><span class="call-count-title">' . count($scheduler) . ' calls</span>';
     $items = array();
     $index = 0;
-    foreach($scheduler as $event){ 
+    foreach($scheduler as $event){
+        $crew_names = '';
+        $bgcolors = array('#ffcccc', '#ffccff', '#ccccff', '#ccffff', '#ccffcc', '#ffffcc', );
+        $border_colors = array('#ff8888', '#ff88ff', '#8888ff', '#88ffff', '#88ff88', '#ffff88', );
+        $color_index = 0;
+        foreach ($event['crews'] as $crew) {
+            $crew_names .= '<span class="crew-names" style="background-color: ' . $bgcolors[$color_index % 6]. ';border:1px solid ' . $border_colors[$color_index%6] . '">' . $crew . '</span>';
+            $color_index++;
+        }
         $items[] = array(
             'data' => '
+                <input type="hidden" name="job-session-id-' . $event['job_session_id'] . '" id="job-session-id-' . $event['job_session_id'] . '" value="' . $event['job_session_id'] . '" />
                 <div class="call-first-row">
                     <strong>
                         <span class="call-id">' . $event['call_id'] . '</span>
@@ -1484,14 +1511,14 @@ function theme_acecrew_calendar_scheduler($scheduler, $date)
                     <span class="call-venue"><strong>Venue:</strong> ' .  $event['venue'] . '</span>
                 </div>
                 <div class="call-third-row"><strong>Skills Required:</strong>'. $event['supplement'] . '</div>
-                <div class="call-fourth-row"><strong>Crew Names:</strong> ' . $event['crews'] . '</div>
-                <div class="call-dummy-row"><strong>Node ID:</strong><span>The session node is: ' . $event['nodeid'] . '</span></div>
-                <div class="call-buttons">  <a href="#" class="loadbtn" id="'.$event['call_id'].'">Load Call</a>
+                <div class="call-fourth-row"><strong>Crew Names:</strong> ' . $crew_names . '</div>
+                <div class="call-buttons">
+                    <a href="#" class="loadbtn" id="'.$event['job_session_id'].'">Load Call</a>
                     <a href="#">Allocate Skills</a>
                     <a href="#" class="smsbtn" onclick="calendar_popup_sms_click('."'$base_url' ,'${event['nodeid']}'". ')">Generate SMS Content</a>
                 </div>', 
             'class' => 'call-listing-item', 
-            'id' => 'call-listing-item-' . $index++, 
+            'id' => 'call-listing-item-' . $event['job_session_id'], 
         );
     }
 
@@ -1500,7 +1527,17 @@ function theme_acecrew_calendar_scheduler($scheduler, $date)
 
     $output = $output . '
         <script>
-            $(".loadbtn").click(function() { 
+            function onSubmitCallbackExample()
+            {
+                $("#acecrew_calendar_output", window.parent.document).html(\'<img class="loading-gif" src="/modules/acecrew/theme/ajax-loader.gif" />\');
+                forward = $(\'#acecrew_calendar_forward_days\', window.parent.document).val();
+                $.get(Drupal.settings.basePath + "acecrew/calendar/" + $(\'#edit-date-timer-datepicker-popup-0\', window.parent.document).val() + "/" + forward, function(data){
+                    var result = Drupal.parseJson(data);
+                    $("#acecrew_calendar_output", window.parent.document).html(result.html);
+                    window.close();
+                });
+            }
+            $(".loadbtn").click(function() {
                 var id = $(this).attr("id"); 
                 var item = $(this).parent().parent();
                 var call_id = item.find(".call-id").text();
@@ -1511,12 +1548,13 @@ function theme_acecrew_calendar_scheduler($scheduler, $date)
                 var call_client = item.find(".call-client").text();
                 var call_venue = item.find(".call-venue").text();
                 var sidebar_widget = "<div id=\"sidebar_widget\">";
+                sidebar_widget += "<input type=\"hidden\" name=\"job-session-id\" id=\"job-session-id\" value=\"" + id + "\">";
                 sidebar_widget += "<div>";
                 sidebar_widget += "<span>" + call_id + " / </span>";
                 sidebar_widget += "<span>" + call_time + " / </span>";
                 sidebar_widget += "<span>" + call_crew_count + " / </span>";
                 sidebar_widget += "<span>" + call_hours + "</span>";
-                sidebar_widget += "</div>"
+                sidebar_widget += "</div>";
                 sidebar_widget += "<div>";
                 sidebar_widget += "<span>" + call_venue + "</span><br>";
                 sidebar_widget += "<span>" + call_client + "</span><br>";
@@ -1526,13 +1564,14 @@ function theme_acecrew_calendar_scheduler($scheduler, $date)
                 sidebar_widget += "<a href=\"#\" onclick=\"alert(1)\">"
                 sidebar_widget += "Update Status"
                 sidebar_widget += "</a>"
-                sidebar_widget += "<a href=\"#\" onclick=\"alert(1)\">"    /* Andrey is needed this code to update */
+                
+                sidebar_widget += "<a href=\"#\" onclick=\"Drupal.modalFrame.open({url: \'crew-allocation/" + id + "/" + call_id + "/0/All\', onSubmit: onSubmitCallbackExample})\">"
                 sidebar_widget += "Allocated Crew"
                 sidebar_widget += "</a>"
                 sidebar_widget += "</div>"
                 sidebar_widget += "</div>"
-                $("#block-block-2").html(sidebar_widget);
                 $("#block-block-2").fadeOut(1);
+                $("#block-block-2").html(sidebar_widget);
                 $("#block-block-2").fadeIn(1500);
             });
         </script>';

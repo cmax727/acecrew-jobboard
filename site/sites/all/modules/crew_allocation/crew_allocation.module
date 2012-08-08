@@ -1,0 +1,257 @@
+<?php
+// $Id: crew_allocation.module,v 1.1.2.3 2009/06/17 12:55:55 markuspetrux Exp $
+
+/**
+ * @file
+ * Example for the Modal Frame module.
+ */
+
+/**
+ * Implementation of hook_perm().
+ */
+
+ 
+function crew_allocation_perm() {
+  return array('access crew allocation');
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function crew_allocation_menu() {
+  $items = array();
+  // This is the parent window, from where all examples are available.
+  $items['crew-allocation'] = array(
+        'title' => 'Crew Allocation',
+        /* 
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('crew_allocation_page'),
+        */
+        'page callback' => 'crew_allocation_page',
+        'access arguments' => array('access crew allocation'),
+        'type' => MENU_CALLBACK,
+    );
+    
+  return $items;
+}
+
+/**
+ * Menu callback; Generate the parent window, from where all examples are available.
+ */
+function crew_allocation_page($first, $second)
+{
+    drupal_add_js(drupal_get_path('module', 'crew_allocation') . '/crew_allocation.js');
+    return drupal_get_form('_crew_allocation_top_form', $first, $second);
+}
+
+
+function _crew_allocation_top_form(&$form_state) {
+    $_supplement_value = $_SESSION['supplement_value'] == NULL ? 0 : $_SESSION['supplement_value'];
+    $_emp_type_value = $_SESSION['emp_type_value'] == NULL ? 'All' : $_SESSION['emp_type_value'];
+    
+    
+    $form = array();
+    modalframe_child_js();
+
+    //print_r($_REQUEST);
+    $page_arguments = func_get_args();
+    $vid = $page_arguments[1];
+    $call_id = $page_arguments[2];
+     
+    
+    $form['crew_allocation'] = array('#type' => 'fieldset',
+    '#title' => t('Crew Allocation - You Must Select '._crew_allocation_get_allocated_number($vid, $call_id).' Crew Members'),
+    '#weight' => -10,
+    );
+    
+    $form['crew_allocation']['supplements'] = array(
+        '#type' => 'select',
+        '#title' => t('Skills'),
+        '#options' => _crew_allocation_get_all_supplements(),
+        '#default_value' => $_supplement_value,// intval($_supplement_value),
+    );
+
+    $form['crew_allocation']['employment_type'] = array(
+        '#type' => 'select',
+        '#title' => t('Employment Type'),
+        /*  
+        '#multiple' => FALSE,
+        '#size' => 0, */
+        '#options' => _crew_allocation_get_all_employment_type(), //array(t('all'), t('Full Time'), t('Part Time')),
+        '#default_value' => $_emp_type_value,//$_emp_type_value == NULL ? 'All': $_emp_type_value, 
+    );
+    
+    $form['submit'] = array(
+        // '#type' => 'submit',
+        '#type' => 'submit',
+        '#value' => t('Submit'),
+    );
+    
+    if($_emp_type_value == NULL || $_emp_type_value == 'All' )
+    {
+        // then get all type.
+        $emp_types = _crew_allocation_get_all_employment_type();
+        array_shift($emp_types);
+        
+        foreach($emp_types as $key => $value)
+        {
+            $form['emp_type'][$key] = array('#type' => 'fieldset',
+                '#title' => t( $value.' Avaiable Crew'),
+            );
+            // get crews per emp_type
+            
+            _crew_allocation_set_crewlist_by_emp_type($form, intval($_supplement_value), $key, $call_id, $vid);
+        }
+    }
+    else
+    {
+        $form['emp_type'][$_emp_type_value] = array('#type' => 'fieldset',
+                '#title' => t( $_emp_type_value.' Avaiable Crew'),
+            );
+        _crew_allocation_set_crewlist_by_emp_type($form, intval($_supplement_value), $_emp_type_value, $call_id, $vid);    
+    }
+    
+    $form['update'] = array(
+        // '#type' => 'submit',
+        '#type' => 'submit',
+        '#value' => t('Update'),
+    );
+    
+    return $form;
+}
+
+function _crew_allocation_top_form_submit($form, &$form_state)
+{
+    /*
+    $selected_supplement = intval($form['crew_allocation']['supplements']['#value']);
+    $selected_emp_type = intval($form['crew_allocation']['employment_type']['#value']);
+    */
+    $_SESSION['supplement_value'] = $form['crew_allocation']['supplements']['#value'];
+    $_SESSION['emp_type_value'] = $form['crew_allocation']['employment_type']['#value'];
+    
+    if ($form_state['values']['op'] == t('Update')) {
+        // save all data to db
+        // at first, check num of crew
+        $crew_num = 0;
+        
+        //next db register
+        $vars = explode('/', $_REQUEST['q']);
+        
+        foreach($form['emp_type'] as $crew_list_by_emp_type) 
+        {
+            foreach($crew_list_by_emp_type as $crew)
+            {
+                if($crew['#type'] != 'checkbox')
+                    continue;
+                if($crew['#value'] == 1)
+                    $crew_num++;
+                if($crew_num > _crew_allocation_get_allocated_number($vars[1], $vars[2]))
+                {
+                    $_SESSION['warning_message'] = 'You are out of crew number!!';
+                    return;
+                }    
+            }
+        }
+        
+        db_query("DELETE FROM {crew_call} WHERE cid = '$vars[2]' AND  jsid = $vars[1]");
+        foreach($form['emp_type'] as $crew_list_by_emp_type) 
+        {
+            foreach($crew_list_by_emp_type as $crew)
+            {
+                if($crew['#type'] != 'checkbox')
+                    continue;
+                
+                if($crew['#value'] == 1)
+                    db_query("INSERT INTO {crew_call} (uid, cid, jsid) VALUES (%d, '%s', %d)", substr($crew['#id'], 5), $vars[2], $vars[1]);
+            }
+        }
+        // Tell the parent window to close the modal frame dialog.
+        modalframe_close_dialog(array(
+          'message' => t('Hey!'),
+        ));
+    }
+}
+
+function crew_allocation_form_alter(&$form, $form_state, $form_id) {
+  // Look for a node edit form.
+   if ($_SESSION['warning_message'] == NULL)
+   {
+      $form['warning'] = NULL; 
+      return;
+   }
+      
+   $form['warning'] = array(
+    '#type' => 'textfield',
+    '#title' => '',
+    '#default_value' => $_SESSION['warning_message'],
+    '#maxlength' => 128,
+    '#size' => 25,
+  );
+  $_SESSION['warning_message'] = NULL; 
+}
+
+// get all supplements 
+function _crew_allocation_get_all_supplements()
+{
+    static $supplements = array();
+    $supplements[0] = 'all';
+    $get_supplements = db_query("SELECT * FROM {profile_fields} WHERE category='Crew Skills' and type ='checkbox'");
+    while($row = db_fetch_object($get_supplements))
+    {
+        // here let's get supplement's name 
+        $supplements[$row->fid] = $row->title;
+    }
+    return $supplements;
+}
+
+function _crew_allocation_get_all_employment_type()
+{
+    static $emp_types = array();
+    $emp_types['All'] = 'All';
+    $get_emp_types = db_query("SELECT * FROM {profile_fields} WHERE category='Employment Type' and type='selection'");
+    $row = db_fetch_object($get_emp_types);
+    $temp = explode("\r\n", $row->options);
+    foreach($temp as $emp_type)
+    {
+        $emp_types[$emp_type] = $emp_type;
+    }
+    return $emp_types;
+}
+
+function _crew_allocation_get_allocated_number($vid, $field_session_callid_value)
+{
+    $sql = db_query("SELECT * FROM {content_type_job_session} WHERE vid = $vid AND field_session_callid_value = '$field_session_callid_value'");
+    $row = db_fetch_object($sql);
+    return isset($row->field_job_session_crew_value)?$row->field_job_session_crew_value:0;
+}
+
+function _crew_allocation_set_crewlist_by_emp_type(&$form, $supplement, $emp_type, $call_id, $js_id)
+{
+    if($supplement != 0)
+        $sql = db_query("SELECT DISTINCT uid FROM {profile_values} WHERE fid = $supplement AND value = 1");
+    else
+        $sql = db_query("SELECT DISTINCT uid FROM {profile_values} WHERE value = 1");
+    while($row = db_fetch_object($sql))
+    {
+        $res = db_fetch_object(db_query("SELECT * FROM {profile_values} WHERE uid = $row->uid AND value = '$emp_type'"));
+        if($res == NULL)
+            continue;
+        // get crew liest from $row->uid user.
+        $user = db_fetch_object(db_query("SELECT * FROM {users} WHERE uid = $row->uid"));
+
+        $form['emp_type'][$emp_type][$user->name] = array(
+            '#type' => 'checkbox',
+            '#id' => t('crew-'.$user->uid),
+            '#title' => t($user->name),
+            '#default_value' => _crew_allocation_is_crew_allocated($row->uid, $call_id, $js_id), // now need relation of call and crew.
+                                // please let's create table drupal_crew_call
+        );
+    }
+}
+
+function _crew_allocation_is_crew_allocated($uid, $call_id, $jsid)
+{
+    if(db_fetch_object(db_query("SELECT * FROM {crew_call} WHERE uid = $uid AND cid = '$call_id' AND jsid = $jsid")) == NULL)
+        return false;
+    return true;
+}
