@@ -668,11 +668,11 @@ function addDayswithdate($date,$days){
 function acecrew_calendar_date($date, $forward_days){
     $forward_days = isset($forward_days) ? $forward_days : 0;
     $date = date($date);
-    $date = strtotime("+".$forward_days." days", strtotime($date));
-    $date = date("Y-m-d", $date);
+    //$date = strtotime("+".$forward_days." days", strtotime($date));
+    //$date = date("Y-m-d", $date);
     $html = '';
     
-    /*for ($i = 0; $i <= $forward_days; $i++) {*/
+    for ($i = 0; $i < $forward_days; $i++) {
 
         $query = "SELECT vid, nid, field_session_callid_value AS cid, field_session_job_nid_value AS jsnid,  TIME(field_job_session_date_time_value) AS jstime
             FROM {content_type_job_session} js 
@@ -755,8 +755,8 @@ function acecrew_calendar_date($date, $forward_days){
         }
         
         $html .= theme('acecrew_calendar_scheduler', $scheduler, $date);
-        /*$date++;*/
-    /*}*/
+        $date++;
+    }
     drupal_json(array('html' => $html));
 }
 
@@ -1475,12 +1475,12 @@ function theme_acecrew_calendar_scheduler($scheduler, $date)
     
     if(empty($scheduler)){
         return '<div class="item-list">
-                    <h3><span class="call-date">' . getDateFormat($date) . '&nbsp;</span><span class="call-count-title">0 calls</span></h3>
+                    <h3><span class="call-date">' . getDateFormat($date) . '&nbsp;-&nbsp;</span><span class="call-count-title">0 calls</span></h3>
                     <span class="acecrew_calendar_no_events">' . t('There are no items to display') . '</span>
                 </div>';
     }
     
-    $title = '<span class="call-date">' . getDateFormat($date) . '&nbsp;</span><span class="call-count-title">' . count($scheduler) . ' calls</span>';
+    $title = '<span class="call-date">' . getDateFormat($date) . '&nbsp;-&nbsp;</span><span class="call-count-title">' . count($scheduler) . ' calls</span>';
     $items = array();
     $index = 0;
     foreach($scheduler as $event){
@@ -1570,7 +1570,7 @@ function theme_acecrew_calendar_scheduler($scheduler, $date)
                 sidebar_widget += "</a>"
                 sidebar_widget += "</div>"
                 sidebar_widget += "</div>"
-                $("#block-block-2").fadeOut(1);
+                $("#block-block-2").hide();
                 $("#block-block-2").html(sidebar_widget);
                 $("#block-block-2").fadeIn(1500);
             });
