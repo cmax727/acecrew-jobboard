@@ -562,3 +562,7 @@ select.form-select {padding: 5px 10px!important;}
 /*additional styles added by Rob */
 .node .node-submitted {display: none;}
 .content-add-more {margin-top: 20px;}
+
+
+/*added by anton*/
+.crew-names {display: inline-block; margin-left: 20px; padding: 4px 8px !important; font-size: 12px; border-radius: 4px; -moz-border-radius: 4px; }

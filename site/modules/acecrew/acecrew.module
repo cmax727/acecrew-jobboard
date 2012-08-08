@@ -699,13 +699,13 @@ function acecrew_calendar_date($date, $forward_days){
             
             $node_id = $session_node->nid;
             
-            $crews = '';
+            $crews = array();
             foreach($session_node->field_job_session_crews as $ses_crew){
                 $crew_name = $ses_crew['value']['field_crew_job_session_name'][0]['value'];
                 $crew_status = $ses_crew['value']['field_crew_job_session_status'][0]['value'];
                 $user = user_load(array('uid' => $crew_name));
                 $crew_name = $user->name;
-                $crews .= '<li class="session_crew_statused_name_' . $crew_status . '">' . $crew_name . '</li>';
+                //$crews .= '<li class="session_crew_statused_name_' . $crew_status . '">' . $crew_name . '</li>';
             }
             
             $supp_name = '';
@@ -719,21 +719,19 @@ function acecrew_calendar_date($date, $forward_days){
             
             $supps =  $supp_name;
             
-            $crews = '<ul class="crew_statuses_ul">' . $crews . '</ul>';
+            //$crews = '<ul class="crew_statuses_ul">' . $crews . '</ul>';
             
             $job_status_code = $job->field_job_status[0]['value'];
             $job_status = $job_statuses[$job_status_code];
             
-            $crew_members = array();
             
-            $query1 =  "SELECT users.name as name
-                        FROM {users} as users, {crew_call} as call 
-                        WHERE users.uid = call.uid 
-                        AND call.cid = %s AND call.jsid = %s;";
+            $query1 =  "SELECT u.name FROM {users} u WHERE u.uid IN (SELECT uid FROM {crew_call} WHERE cid='%s' AND jsid='%s');";
             $query_result1 =  db_query($query1, $row->cid, $row->vid);
-            while ($row = db_fetch_array($query_result1)) {
-                $crew_members[] = $row->name;    
+            while ($row1 = db_fetch_object($query_result1)) {
+                $crews[] = $row1->name;    
             }
+            
+            //$crews = array('Anton', 'Anton K');
 
             
             $scheduler[] = array(
@@ -751,7 +749,6 @@ function acecrew_calendar_date($date, $forward_days){
                 'crews' => $crews,
                 'supplement' => $supps,
                 'nodeid' => $node_id, 
-                'crew_members' => $crew_members, 
                  
             );
             
@@ -1486,7 +1483,15 @@ function theme_acecrew_calendar_scheduler($scheduler, $date)
     $title = '<span class="call-date">' . getDateFormat($date) . '&nbsp;</span><span class="call-count-title">' . count($scheduler) . ' calls</span>';
     $items = array();
     $index = 0;
-    foreach($scheduler as $event){ 
+    foreach($scheduler as $event){
+        $crew_names = '';
+        $bgcolors = array('#ffcccc', '#ffccff', '#ccccff', '#ccffff', '#ccffcc', '#ffffcc', );
+        $border_colors = array('#ff8888', '#ff88ff', '#8888ff', '#88ffff', '#88ff88', '#ffff88', );
+        $color_index = 0;
+        foreach ($event['crews'] as $crew) {
+            $crew_names .= '<span class="crew-names" style="background-color: ' . $bgcolors[$color_index % 6]. ';border:1px solid ' . $border_colors[$color_index%6] . '">' . $crew . '</span>';
+            $color_index++;
+        }
         $items[] = array(
             'data' => '
                 <input type="hidden" name="job-session-id-' . $event['job_session_id'] . '" id="job-session-id-' . $event['job_session_id'] . '" value="' . $event['job_session_id'] . '" />
@@ -1506,7 +1511,7 @@ function theme_acecrew_calendar_scheduler($scheduler, $date)
                     <span class="call-venue"><strong>Venue:</strong> ' .  $event['venue'] . '</span>
                 </div>
                 <div class="call-third-row"><strong>Skills Required:</strong>'. $event['supplement'] . '</div>
-                <div class="call-fourth-row"><strong>Crew Names:</strong> ' . $event['crews'] . '</div>
+                <div class="call-fourth-row"><strong>Crew Names:</strong> ' . $crew_names . '</div>
                 <div class="call-buttons">
                     <a href="#" class="loadbtn" id="'.$event['job_session_id'].'">Load Call</a>
                     <a href="#">Allocate Skills</a>
@@ -1524,8 +1529,13 @@ function theme_acecrew_calendar_scheduler($scheduler, $date)
         <script>
             function onSubmitCallbackExample()
             {
-                //alert("adgfadsfasdfasdfasd");
-                // window.location.reload(); 
+                $("#acecrew_calendar_output", window.parent.document).html(\'<img class="loading-gif" src="/modules/acecrew/theme/ajax-loader.gif" />\');
+                forward = $(\'#acecrew_calendar_forward_days\', window.parent.document).val();
+                $.get(Drupal.settings.basePath + "acecrew/calendar/" + $(\'#edit-date-timer-datepicker-popup-0\', window.parent.document).val() + "/" + forward, function(data){
+                    var result = Drupal.parseJson(data);
+                    $("#acecrew_calendar_output", window.parent.document).html(result.html);
+                    window.close();
+                });
             }
             $(".loadbtn").click(function() {
                 var id = $(this).attr("id"); 
