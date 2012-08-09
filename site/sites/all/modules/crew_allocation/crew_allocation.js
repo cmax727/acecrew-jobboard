@@ -8,4 +8,10 @@ function onSubmitCallbackExample()
             $("#acecrew_calendar_output", window.parent.document).html(result.html);
             window.close();
         });
+<<<<<<< HEAD
 }
+=======
+}
+    
+
+>>>>>>> 242e667f3d6ec9d3e101990fba6141dc88a4bb5c
