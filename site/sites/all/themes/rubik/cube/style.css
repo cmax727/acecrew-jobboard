@@ -498,7 +498,7 @@ fieldset.group-company-contact-details #edit-field-client-logo-0-ahah-wrapper {w
 
 /*sidebar AJAX block */
 #block-block-2 {background: url(images/pattern-blue.png) repeat 0 0; border: 1px solid #99c4ea; border-radius: 6px; margin: 30px 0 30px 0;}
-#block-block-2 div {background: transparent !important;}
+#block-block-2 div {background: transparent !important;padding: 3px;}
 .info-icon {display: block; margin: 10px auto;}
 #block-block-2 p {text-align: center;}
 #node-14 .column-main, #node-11 .column-main  {display: none;}
@@ -509,7 +509,7 @@ fieldset.group-company-contact-details #edit-field-client-logo-0-ahah-wrapper {w
 
 /*call listing*/
 .call-buttons a {display: inline-block; margin-left: 20px; padding: 4px 8px !important; font-size: 12px;}
-.call-buttons {text-align: right; margin: 10px 0;}
+.call-buttons {text-align: right; margin: 10px 35px 10px 0;}
 ul.call-listing li.call-listing-item {background: #fff url(images/listing-header.png) repeat-x 0 0; border: 1px solid #d5d5d5; border-radius: 6px; margin-top: 10px;}
 .call-count-title {background: url(images/pattern-dark-blue.png) repeat-x 0 0; height: 25px; color: #fff; display: inline-block; border-radius: 4px; padding: 0 12px; line-height: 25px;}
 .call-first-row {height: 30px; margin-bottom: 20px;}

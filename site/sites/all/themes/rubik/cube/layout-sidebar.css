@@ -2,7 +2,13 @@
 #right { float:left; }
 
 #content { width:79.67%; }
-#right { width:220px; }
+#right { width:300px; }
 
-.sidebar-right #content {width: 880px;}
+.sidebar-right #content {width: 800px;}
 .sidebar-right #right {float: right;}
+#supplements span {display: inline-block; margin-right: 10px; padding: 1px 2px !important; font-size: 12px; border-radius: 4px; -moz-border-radius: 4px; background-color: #596371; color: white;}
+#call-info1 span {font-size: 14px; font-weight: bolder; color: #1E7EBE;}
+#call-info2 {margin: 0 0 5px 0;}
+#call-info2 span {font-size: 15px;}
+.each-crew span {background-color: #fcc; border: 1px solid #f88; width: 85px; display: inline-block; padding: 2px 8px !important; font-size: 12px; border-radius: 4px; -moz-border-radius: 4px;}
+.supplements-type {margin-right: 30px;float: right;padding:2px 10px;}

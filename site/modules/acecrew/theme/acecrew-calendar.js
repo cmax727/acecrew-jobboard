@@ -1,4 +1,6 @@
 $(document).ready(function() {
+    
+    
 
     //$('#edit-date-forward-days').spinner({ min: -100, max: 100 });
     
