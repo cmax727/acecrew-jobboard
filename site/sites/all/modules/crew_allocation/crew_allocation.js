@@ -1,5 +1,6 @@
-$(document).ready(function() {
-    $('#edit-update').click(function() {
+function onSubmitCallbackExample()
+{
+    alert("Ya!!");
         $("#acecrew_calendar_output", window.parent.document).html('<img class="loading-gif" src="/modules/acecrew/theme/ajax-loader.gif" />');
         forward = $('#acecrew_calendar_forward_days', window.parent.document).val();
         $.get(Drupal.settings.basePath + "acecrew/calendar/" + $('#edit-date-timer-datepicker-popup-0', window.parent.document).val() + "/" + forward, function(data){
@@ -7,6 +8,10 @@ $(document).ready(function() {
             $("#acecrew_calendar_output", window.parent.document).html(result.html);
             window.close();
         });
-    })
-});
+<<<<<<< HEAD
+}
+=======
+}
+    
 
+>>>>>>> 242e667f3d6ec9d3e101990fba6141dc88a4bb5c

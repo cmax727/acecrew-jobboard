@@ -110,6 +110,13 @@ function acecrew_menu() {
         'access arguments' => array('acecrew calendar'),
         'type' => MENU_CALLBACK,
     );
+    $items['acecrew/calendar/set-status/%'] = array(
+        'title' => 'Ace Crew Set Status',
+        'page callback' => 'acecrew_calendar_set_supplements_status',
+        'page arguments' => array(3),
+        'access arguments' => array('acecrew calendar'),
+        'type' => MENU_CALLBACK,
+    );
     $items['acecrew/ajax/report/%/%/%'] = array(
         'title' => 'Ace Crew report',
         'page callback' => 'acecrew_report_date_ajax',
@@ -668,11 +675,11 @@ function addDayswithdate($date,$days){
 function acecrew_calendar_date($date, $forward_days){
     $forward_days = isset($forward_days) ? $forward_days : 0;
     $date = date($date);
-    $date = strtotime("+".$forward_days." days", strtotime($date));
-    $date = date("Y-m-d", $date);
+    //$date = strtotime("+".$forward_days." days", strtotime($date));
+    //$date = date("Y-m-d", $date);
     $html = '';
     
-    /*for ($i = 0; $i <= $forward_days; $i++) {*/
+    for ($i = 0; $i <= $forward_days; $i++) {
 
         $query = "SELECT vid, nid, field_session_callid_value AS cid, field_session_job_nid_value AS jsnid,  TIME(field_job_session_date_time_value) AS jstime
             FROM {content_type_job_session} js 
@@ -725,10 +732,11 @@ function acecrew_calendar_date($date, $forward_days){
             $job_status = $job_statuses[$job_status_code];
             
             
-            $query1 =  "SELECT u.name FROM {users} u WHERE u.uid IN (SELECT uid FROM {crew_call} WHERE cid='%s' AND jsid='%s');";
+            $query1 =  "SELECT u.name, u.uid FROM {users} u WHERE u.uid IN (SELECT uid FROM {crew_call} WHERE cid='%s' AND jsid='%s');";
             $query_result1 =  db_query($query1, $row->cid, $row->vid);
             while ($row1 = db_fetch_object($query_result1)) {
-                $crews[] = $row1->name;    
+                $crew = array($row1->name, $row1->uid);
+                $crews[] = $crew;    
             }
             
             //$crews = array('Anton', 'Anton K');
@@ -755,8 +763,9 @@ function acecrew_calendar_date($date, $forward_days){
         }
         
         $html .= theme('acecrew_calendar_scheduler', $scheduler, $date);
-        /*$date++;*/
-    /*}*/
+        $date++;
+    }
+    
     drupal_json(array('html' => $html));
 }
 
@@ -1475,12 +1484,12 @@ function theme_acecrew_calendar_scheduler($scheduler, $date)
     
     if(empty($scheduler)){
         return '<div class="item-list">
-                    <h3><span class="call-date">' . getDateFormat($date) . '&nbsp;</span><span class="call-count-title">0 calls</span></h3>
+                    <h3><span class="call-date">' . getDateFormat($date) . '&nbsp;-&nbsp;</span><span class="call-count-title">0 calls</span></h3>
                     <span class="acecrew_calendar_no_events">' . t('There are no items to display') . '</span>
                 </div>';
     }
     
-    $title = '<span class="call-date">' . getDateFormat($date) . '&nbsp;</span><span class="call-count-title">' . count($scheduler) . ' calls</span>';
+    $title = '<span class="call-date">' . getDateFormat($date) . '&nbsp;-&nbsp;</span><span class="call-count-title">' . count($scheduler) . ' calls</span>';
     $items = array();
     $index = 0;
     foreach($scheduler as $event){
@@ -1489,7 +1498,7 @@ function theme_acecrew_calendar_scheduler($scheduler, $date)
         $border_colors = array('#ff8888', '#ff88ff', '#8888ff', '#88ffff', '#88ff88', '#ffff88', );
         $color_index = 0;
         foreach ($event['crews'] as $crew) {
-            $crew_names .= '<span class="crew-names" style="background-color: ' . $bgcolors[$color_index % 6]. ';border:1px solid ' . $border_colors[$color_index%6] . '">' . $crew . '</span>';
+            $crew_names .= '<span class="crew-names" id="uid-' . $crew[1] . '" style="background-color: ' . $bgcolors[$color_index % 6]. ';border:1px solid ' . $border_colors[$color_index%6] . '">' . $crew[0] . '</span>';
             $color_index++;
         }
         $items[] = array(
@@ -1522,15 +1531,17 @@ function theme_acecrew_calendar_scheduler($scheduler, $date)
         );
     }
 
-    $dummyhtml='<div class="block-content clear-block prose"><span class="icon-info"></span><p>Click on the load call button at the bottom of each call, to load more information</p></div>';
+    $dummyhtml = '<div class="block-content clear-block prose"><span class="icon-info"></span><p>Click on the load call button at the bottom of each call, to load more information</p></div>';
     $output = theme('item_list', $items, $title, 'ul', array('class' => 'call-listing'));
 
     $output = $output . '
         <script>
-            function onSubmitCallbackExample()
-            {
+            function onSubmitCallbackExample() {
                 $("#acecrew_calendar_output", window.parent.document).html(\'<img class="loading-gif" src="/modules/acecrew/theme/ajax-loader.gif" />\');
                 forward = $(\'#acecrew_calendar_forward_days\', window.parent.document).val();
+                $("#block-block-2").hide();
+                $("#block-block-2", window.parent.document).html("<div class=\"block-content clear-block prose\"><span class=\"icon-info\"></span><p>Click on the load call button at the bottom of each call, to load more information</p></div>");
+                $("#block-block-2").fadeIn(1000);
                 $.get(Drupal.settings.basePath + "acecrew/calendar/" + $(\'#edit-date-timer-datepicker-popup-0\', window.parent.document).val() + "/" + forward, function(data){
                     var result = Drupal.parseJson(data);
                     $("#acecrew_calendar_output", window.parent.document).html(result.html);
@@ -1547,36 +1558,71 @@ function theme_acecrew_calendar_scheduler($scheduler, $date)
                 var call_status = item.find(".call-status").text();
                 var call_client = item.find(".call-client").text();
                 var call_venue = item.find(".call-venue").text();
+                var crews = {};
+                crews = item.find(".crew-names");
+                
                 var sidebar_widget = "<div id=\"sidebar_widget\">";
                 sidebar_widget += "<input type=\"hidden\" name=\"job-session-id\" id=\"job-session-id\" value=\"" + id + "\">";
-                sidebar_widget += "<div>";
+                sidebar_widget += "<div id=\"call-info1\">";
                 sidebar_widget += "<span>" + call_id + " / </span>";
                 sidebar_widget += "<span>" + call_time + " / </span>";
                 sidebar_widget += "<span>" + call_crew_count + " / </span>";
                 sidebar_widget += "<span>" + call_hours + "</span>";
                 sidebar_widget += "</div>";
-                sidebar_widget += "<div>";
+                sidebar_widget += "<div id=\"call-info2\">";
                 sidebar_widget += "<span>" + call_venue + "</span><br>";
                 sidebar_widget += "<span>" + call_client + "</span><br>";
                 sidebar_widget += "<span>" + call_status + "</span><br>";
-                sidebar_widget += "</div>"
-                sidebar_widget += "<div class=\"call-buttons\">"
-                sidebar_widget += "<a href=\"#\" onclick=\"alert(1)\">"
-                sidebar_widget += "Update Status"
-                sidebar_widget += "</a>"
-                
-                sidebar_widget += "<a href=\"#\" onclick=\"Drupal.modalFrame.open({url: \'crew-allocation/" + id + "/" + call_id + "/0/All\', onSubmit: onSubmitCallbackExample})\">"
-                sidebar_widget += "Allocated Crew"
-                sidebar_widget += "</a>"
-                sidebar_widget += "</div>"
-                sidebar_widget += "</div>"
-                $("#block-block-2").fadeOut(1);
+                sidebar_widget += "</div>";
+                sidebar_widget += "<div id=\"supplements\">";
+                sidebar_widget += "<span>crew chief</span>";
+                sidebar_widget += "<span>cherry picker</span>";
+                sidebar_widget += "<span>forklift operator</span>";
+                sidebar_widget += "</div>";
+                sidebar_widget += "<div id=\"crews-status-set-box\">";
+                sidebar_widget += "</div>";
+                sidebar_widget += "<div class=\"call-buttons\">";
+                sidebar_widget += "<a href=\"#\" onclick=\"Drupal.modalFrame.open({url: \'crew-allocation/" + id + "/" + call_id + "/0/All\', onSubmit: onSubmitCallbackExample})\">";
+                sidebar_widget += "Allocated Crew";
+                sidebar_widget += "</a>";
+                sidebar_widget += "<a href=\"#\" onclick=\"udpate_status_onclick()\">";
+                sidebar_widget += "Update Status";
+                sidebar_widget += "</a>";
+                sidebar_widget += "</div>";
+                sidebar_widget += "</div>";
+                $("#block-block-2").hide();
                 $("#block-block-2").html(sidebar_widget);
-                $("#block-block-2").fadeIn(1500);
+                $("#crews-status-set-box").html("");
+                crews.each(function() {
+                    sub_content = "<div class=\"each-crew\">";
+                    sub_content += "<span>" + $(this).html() + "</span>";
+                    sub_content += "<select class=\"supplements-type\" id=\"" + $(this).attr("id") + "\">";
+                    sub_content += "<option value=\"text_not_sent\">Text Not Sent</option>";
+                    sub_content += "<option value=\"text_sent\">Text Sent</option>";
+                    sub_content += "<option value=\"confirmed\">Confirmed</option>";
+                    sub_content += "<option value=\"declined\">Declined</option>";
+                    sub_content += "</select>";
+                    sub_content += "</div>";
+                    content = $("#crews-status-set-box").html();
+                    $("#crews-status-set-box").html(content + sub_content);
+                });
+                //for(var i=0; i<crews.length; i++) {
+                    //sidebar_widget += "<span id=\"" + crews.get(i).innerHTML + "\">" + crews.get(i).innerHTML + "</span>";
+                //}                
+                $("#block-block-2").fadeIn(1000);
             });
         </script>';
         
     return $output;
+}
+
+
+/*
+ * added by Anton
+ */
+
+function acecrew_calendar_set_supplements_status($args) {
+    echo 'here';
 }
 
 function theme_acecrew_report_table($report)
