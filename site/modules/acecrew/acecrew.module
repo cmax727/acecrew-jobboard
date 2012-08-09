@@ -1531,7 +1531,7 @@ function theme_acecrew_calendar_scheduler($scheduler, $date)
         );
     }
 
-    $dummyhtml='<div class="block-content clear-block prose"><span class="icon-info"></span><p>Click on the load call button at the bottom of each call, to load more information</p></div>';
+    $dummyhtml = '<div class="block-content clear-block prose"><span class="icon-info"></span><p>Click on the load call button at the bottom of each call, to load more information</p></div>';
     $output = theme('item_list', $items, $title, 'ul', array('class' => 'call-listing'));
 
     $output = $output . '
@@ -1543,6 +1543,68 @@ function theme_acecrew_calendar_scheduler($scheduler, $date)
                     var result = Drupal.parseJson(data);
                     $("#acecrew_calendar_output", window.parent.document).html(result.html);
                     window.close();
+                    
+                    var id = $(this).attr("id"); 
+                    var item = $(this).parent().parent();
+                    var call_id = item.find(".call-id").text();
+                    var call_time = item.find(".call-time").text();
+                    var call_crew_count = item.find(".call-crew-count").text();
+                    var call_hours = item.find(".call-hours").text();
+                    var call_status = item.find(".call-status").text();
+                    var call_client = item.find(".call-client").text();
+                    var call_venue = item.find(".call-venue").text();
+                    var crews = {};
+                    crews = item.find(".crew-names");
+                    
+                    var sidebar_widget = "<div id=\"sidebar_widget\">";
+                    sidebar_widget += "<input type=\"hidden\" name=\"job-session-id\" id=\"job-session-id\" value=\"" + id + "\">";
+                    sidebar_widget += "<div id=\"call-info1\">";
+                    sidebar_widget += "<span>" + call_id + " / </span>";
+                    sidebar_widget += "<span>" + call_time + " / </span>";
+                    sidebar_widget += "<span>" + call_crew_count + " / </span>";
+                    sidebar_widget += "<span>" + call_hours + "</span>";
+                    sidebar_widget += "</div>";
+                    sidebar_widget += "<div id=\"call-info2\">";
+                    sidebar_widget += "<span>" + call_venue + "</span><br>";
+                    sidebar_widget += "<span>" + call_client + "</span><br>";
+                    sidebar_widget += "<span>" + call_status + "</span><br>";
+                    sidebar_widget += "</div>";
+                    sidebar_widget += "<div id=\"supplements\">";
+                    sidebar_widget += "<span>crew chief</span>";
+                    sidebar_widget += "<span>cherry picker</span>";
+                    sidebar_widget += "<span>forklift operator</span>";
+                    sidebar_widget += "</div>";
+                    sidebar_widget += "<div id=\"crews-status-set-box\">";
+                    sidebar_widget += "</div>";
+                    sidebar_widget += "<div class=\"call-buttons\">";
+                    sidebar_widget += "<a href=\"#\" onclick=\"Drupal.modalFrame.open({url: \'crew-allocation/" + id + "/" + call_id + "/0/All\', onSubmit: onSubmitCallbackExample})\">";
+                    sidebar_widget += "Allocated Crew";
+                    sidebar_widget += "</a>";
+                    sidebar_widget += "<a href=\"#\" onclick=\"udpate_status_onclick()\">";
+                    sidebar_widget += "Update Status";
+                    sidebar_widget += "</a>";
+                    sidebar_widget += "</div>";
+                    sidebar_widget += "</div>";
+                    $("#block-block-2").hide();
+                    $("#block-block-2").html(sidebar_widget);
+                    $("#crews-status-set-box").html("");
+                    crews.each(function() {
+                        sub_content = "<div class=\"each-crew\">";
+                        sub_content += "<span>" + $(this).html() + "</span>";
+                        sub_content += "<select class=\"supplements-type\" id=\"" + $(this).attr("id") + "\">";
+                        sub_content += "<option value=\"text_not_sent\">Text Not Sent</option>";
+                        sub_content += "<option value=\"text_sent\">Text Sent</option>";
+                        sub_content += "<option value=\"confirmed\">Confirmed</option>";
+                        sub_content += "<option value=\"declined\">Declined</option>";
+                        sub_content += "</select>";
+                        sub_content += "</div>";
+                        content = $("#crews-status-set-box").html();
+                        $("#crews-status-set-box").html(content + sub_content);
+                    });
+                    //for(var i=0; i<crews.length; i++) {
+                        //sidebar_widget += "<span id=\"" + crews.get(i).innerHTML + "\">" + crews.get(i).innerHTML + "</span>";
+                    //}                
+                    $("#block-block-2").fadeIn(1000);
                 });
             }
             $(".loadbtn").click(function() {
@@ -1612,6 +1674,11 @@ function theme_acecrew_calendar_scheduler($scheduler, $date)
         
     return $output;
 }
+
+
+/*
+ * added by Anton
+ */
 
 function acecrew_calendar_set_supplements_status($args) {
     echo 'here';
