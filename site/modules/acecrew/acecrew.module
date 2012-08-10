@@ -732,10 +732,15 @@ function acecrew_calendar_date($date, $forward_days){
             $job_status = $job_statuses[$job_status_code];
             
             
-            $query1 =  "SELECT u.name, u.uid FROM {users} u WHERE u.uid IN (SELECT uid FROM {crew_call} WHERE cid='%s' AND jsid='%s');";
-            $query_result1 =  db_query($query1, $row->cid, $row->vid);
+            $query1 =  "SELECT u.name, u.uid FROM {users} u WHERE u.uid IN (SELECT uid FROM {crew_call} WHERE jsid='%s');";
+            $query_result1 =  db_query($query1, $row->vid);
             while ($row1 = db_fetch_object($query_result1)) {
-                $crew = array($row1->name, $row1->uid);
+                $query2 = "SELECT supplements FROM {crew_call} WHERE uid='%s' AND jsid='%s'";
+                $query_result2 = db_query($query2, $row1->uid, $row->vid);
+                while ($row2 = db_fetch_object($query_result2)) {
+                    $supplements = $row2->supplements;
+                }
+                $crew = array($row1->name, $row1->uid, $supplements);
                 $crews[] = $crew;    
             }
             
@@ -1499,6 +1504,7 @@ function theme_acecrew_calendar_scheduler($scheduler, $date)
         $color_index = 0;
         foreach ($event['crews'] as $crew) {
             $crew_names .= '<span class="crew-names" id="uid-' . $crew[1] . '" style="background-color: ' . $bgcolors[$color_index % 6]. ';border:1px solid ' . $border_colors[$color_index%6] . '">' . $crew[0] . '</span>';
+            $crew_names .= '<input type="hidden" name="jsid-' . $crew[1] . '" id="jsid-' . $crew[1] . '" class="jsid" value="' . $crew[2] . '" />';
             $color_index++;
         }
         $items[] = array(
@@ -1594,13 +1600,16 @@ function theme_acecrew_calendar_scheduler($scheduler, $date)
                 $("#block-block-2").html(sidebar_widget);
                 $("#crews-status-set-box").html("");
                 crews.each(function() {
+                    var tmp = $(this).attr("id").split("-");
+                    var jsid = "#jsid-" + tmp[1];
+                    var supplements = $(jsid).val();
                     sub_content = "<div class=\"each-crew\">";
                     sub_content += "<span>" + $(this).html() + "</span>";
                     sub_content += "<select class=\"supplements-type\" id=\"" + $(this).attr("id") + "\">";
-                    sub_content += "<option value=\"text_not_sent\">Text Not Sent</option>";
-                    sub_content += "<option value=\"text_sent\">Text Sent</option>";
-                    sub_content += "<option value=\"confirmed\">Confirmed</option>";
-                    sub_content += "<option value=\"declined\">Declined</option>";
+                    sub_content += "<option value=\"text_not_sent\"" + (supplements == "text_not_sent" ? " selected=\"selected\"" : "") + ">Text Not Sent</option>";
+                    sub_content += "<option value=\"text_sent\"" + (supplements == "text_sent" ? " selected=\"selected\"" : "") + ">Text Sent</option>";
+                    sub_content += "<option value=\"confirmed\"" + (supplements == "confirmed" ? " selected=\"selected\"" : "") + ">Confirmed</option>";
+                    sub_content += "<option value=\"delete\">Delete</option>";
                     sub_content += "</select>";
                     sub_content += "</div>";
                     content = $("#crews-status-set-box").html();
@@ -1622,7 +1631,25 @@ function theme_acecrew_calendar_scheduler($scheduler, $date)
  */
 
 function acecrew_calendar_set_supplements_status($args) {
-    echo 'here';
+    $arg_arr = explode(":", $args);
+    $jsid = $arg_arr[0];
+    $uid_status_arr = array();
+    for ($i = 1; $i < count($arg_arr);) {
+        $tmp = explode("-", $arg_arr[$i]);
+        $uid = $tmp[1];
+        $i++;
+        $supplements = $arg_arr[$i];
+        $i++;
+        if ($supplements != 'delete') {
+            $query = "UPDATE {crew_call} SET `supplements` = '$supplements' WHERE `uid`='$uid'";
+            $query .= " AND `jsid`='$jsid'";
+        } else {
+            $query = "DELETE FROM {crew_call} WHERE `uid`='$uid'";
+            $query .= " AND `jsid`='$jsid'";
+        }
+        $res = db_query($query);
+        echo 'here';
+    }
 }
 
 function theme_acecrew_report_table($report)
