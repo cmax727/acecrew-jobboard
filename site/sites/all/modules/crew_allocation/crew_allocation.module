@@ -99,7 +99,7 @@ function _crew_allocation_top_form(&$form_state) {
             );
             // get crews per emp_type
             
-            _crew_allocation_set_crewlist_by_emp_type($form, intval($_supplement_value), $key, $call_id, $vid);
+            _crew_allocation_set_crewlist_by_emp_type($form, $form_state, intval($_supplement_value), $key, $call_id, $vid);
         }
     }
     else
@@ -107,7 +107,7 @@ function _crew_allocation_top_form(&$form_state) {
         $form['emp_type'][$_emp_type_value] = array('#type' => 'fieldset',
                 '#title' => t( $_emp_type_value.' Avaiable Crew'),
             );
-        _crew_allocation_set_crewlist_by_emp_type($form, intval($_supplement_value), $_emp_type_value, $call_id, $vid);    
+        _crew_allocation_set_crewlist_by_emp_type($form, $form_state, intval($_supplement_value), $_emp_type_value, $call_id, $vid);    
     }
     
     $form['update'] = array(
@@ -152,7 +152,7 @@ function _crew_allocation_top_form_submit($form, &$form_state)
             }
         }
         
-        db_query("DELETE FROM {crew_call} WHERE cid = '$vars[2]' AND  jsid = $vars[1]");
+        
         foreach($form['emp_type'] as $crew_list_by_emp_type) 
         {
             foreach($crew_list_by_emp_type as $crew)
@@ -161,7 +161,12 @@ function _crew_allocation_top_form_submit($form, &$form_state)
                     continue;
                 
                 if($crew['#value'] == 1)
-                    db_query("INSERT INTO {crew_call} (uid, cid, jsid) VALUES (%d, '%s', %d)", substr($crew['#id'], 5), $vars[2], $vars[1]);
+                {
+                    if(_crew_allocation_is_crew_allocated(substr($crew['#id'], 5), $vars[2], $vars[1]) == false)
+                        db_query("INSERT INTO {crew_call} (uid, cid, jsid, supplements) VALUES (%d, '%s', %d, '%s')", substr($crew['#id'], 5), $vars[2], $vars[1], '');
+                }    
+                else
+                    db_query("DELETE FROM {crew_call} WHERE uid = %d AND cid = '%s' AND jsid = %d", substr($crew['#id'], 5) , $vars[2], $vars[1]);
             }
         }
         // Tell the parent window to close the modal frame dialog.
@@ -224,7 +229,7 @@ function _crew_allocation_get_allocated_number($vid, $field_session_callid_value
     return isset($row->field_job_session_crew_value)?$row->field_job_session_crew_value:0;
 }
 
-function _crew_allocation_set_crewlist_by_emp_type(&$form, $supplement, $emp_type, $call_id, $js_id)
+function _crew_allocation_set_crewlist_by_emp_type(&$form, &$form_state, $supplement, $emp_type, $call_id, $js_id)
 {
     if($supplement != 0)
         $sql = db_query("SELECT DISTINCT uid FROM {profile_values} WHERE fid = $supplement AND value = 1");
@@ -238,6 +243,18 @@ function _crew_allocation_set_crewlist_by_emp_type(&$form, $supplement, $emp_typ
         // get crew liest from $row->uid user.
         $user = db_fetch_object(db_query("SELECT * FROM {users} WHERE uid = $row->uid"));
 
+        if($form_state['post']['op']  == t('Update'))
+        {
+            $form['emp_type'][$emp_type][$user->name] = array(
+                '#type' => 'checkbox',
+                '#id' => t('crew-'.$user->uid),
+                '#title' => t($user->name),
+                '#value' => intval($form_state['post'][str_replace(" ", "_", $user->name)]), // now need relation of call and crew.
+                                    // please let's create table drupal_crew_call
+            );
+        }
+        else
+        {
         $form['emp_type'][$emp_type][$user->name] = array(
             '#type' => 'checkbox',
             '#id' => t('crew-'.$user->uid),
@@ -245,6 +262,8 @@ function _crew_allocation_set_crewlist_by_emp_type(&$form, $supplement, $emp_typ
             '#default_value' => _crew_allocation_is_crew_allocated($row->uid, $call_id, $js_id), // now need relation of call and crew.
                                 // please let's create table drupal_crew_call
         );
+    }
+        
     }
 }
 
