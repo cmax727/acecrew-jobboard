@@ -204,10 +204,52 @@ $(document).ready(function(){
   </div>
   <?php }?>
       
-  <?php if(isset($user_view[3]) && $user_view[3]=='Current Activity'){?>
+      
+  <?php 
+  if(isset($user_view[3]) && $user_view[3]=='current-activity'){?>
   <h2 class="profile_title" title="current_activity">Current Activity:</h2>
   <div class="current_activity profile_item">
   <div><?=$account->profile_activity;?></div>
+  <table>
+  <tr class="table-columns">
+  <td>Client</td>
+  <td>Venue</td>
+  <td>Date+Time</td>
+  <td>Call ID</td>
+  <td>Job Link</td>
+  </tr>
+  <?php 
+  foreach($vars['curr_activities'] as $activity){
+  ?>
+  <tr>
+  <td>
+  <?php
+    echo $activity['client'];
+?>
+  </td>
+  <td>
+  <?php
+    echo $activity['venue'];
+?>
+  </td>
+  <td>
+  <?php
+    echo $activity['date_time']
+?>
+  </td>
+  <td>
+  <?php
+    echo $activity['call_id'];
+?>
+  </td>
+  <td>
+  <a href= "<?php echo $GLOBALS['base_url']."/".$activity['link'] ?>">Job View</a>
+  </td>
+  </tr>
+  <?php
+  }
+  ?>
+  </table>
   </div>
   <?php }?>
       
