@@ -44,6 +44,44 @@
 <?php
 $user_view=$_GET;
 $user_view=explode('/',$user_view['q']);
+
+if($user_view[3] == t('current-activity'))
+{
+    $uid =    $user_view[1];
+    $vars['curr_activities'] = array();
+    $sql = db_query("SELECT * FROM {crew_call} WHERE uid = %d ", $uid);
+    $count = 0;
+    while($row = db_fetch_object($sql))
+    {
+        // here, get the call id.
+        $vars['curr_activities'][$count]['call_id'] = $row->cid;
+        // next get other info
+        $row_js = db_fetch_object(db_query("SELECT * FROM {content_type_job_session} WHERE field_session_callid_value = '%s' AND vid = %d", $row->cid, $row->jsid));
+        
+        // how can get datetime type variable?
+        $vars['curr_activities'][$count]['date_time'] = $row_js->field_job_session_date_time_value;
+        
+        $row_job = db_fetch_object(db_query("SELECT * FROM {content_type_job} WHERE nid = %d", $row_js->field_session_job_nid_value));
+        
+        // link require only job id.
+        // first, need to know about create number
+        // url_alias contains the needed info. nod/750 -> content/job-create-21
+        $alias_link = db_result(db_query("SELECT dst FROM {url_alias} WHERE src='%s'", "node/".$row_job->nid));
+        $vars['curr_activities'][$count]['link'] = $alias_link;
+        
+        // get the names
+        $row_ctv = db_fetch_object(db_query("SELECT field_venue_name_value FROM {content_type_venue} WHERE field_venue_id_value = %d", $row_job->field_job_venue_value));
+        
+        $vars['curr_activities'][$count]['venue'] = $row_ctv->field_venue_name_value;
+
+        $row_ctc = db_fetch_object(db_query("SELECT field_client_name_value FROM {content_type_client} WHERE field_client_id_value = %d", $row_job->field_job_client_name_value));
+
+        $vars['curr_activities'][$count]['client'] = $row_ctc->field_client_name_value;
+
+        $count++;
+    }
+}
+    
 //echo '<pre>'.print_r($user_view,1);
 
 //echo '<pre>'. print_r($account,1);
