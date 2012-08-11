@@ -311,7 +311,10 @@ div#help-text .column-side .help-links { background:#222; }
 .help-page,
 div.comment,
 div.node {  }
-
+.table-columns
+{
+    color: blue;
+}
 #help-text .column-main .column-wrapper,
 .help-page .column-main .column-wrapper,
 div.comment .column-main .column-wrapper,
