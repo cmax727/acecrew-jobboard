@@ -1101,14 +1101,17 @@ function acecrew_report_form(){
     return $form;
 }
 
+function _arr_filter_callback($arg){
+    if ( is_numeric($arg)) 
+        return true;
+    return false;
+    
+}
 //?? sasya
 function __ref_func_inline(&$val){
             
         $valArr = explode("\r\n", $val);
-        $valArr = array_filter($valArr, function($arg){
-                    if ( is_numeric($arg)) return true;
-                    return false;
-                    });
+        $valArr = array_filter($valArr, _arr_filter_callback);
         $valArr = array_unique($valArr);
         asort($valArr);
         $val = implode("\r\n", $valArr);
