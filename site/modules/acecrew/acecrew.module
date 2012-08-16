@@ -1173,10 +1173,10 @@ function acecrew_nodeapi(&$node, $op, $teaser, $page) {
         $val = implode("\r\n", $valArr);
         
         };*/
-        $refFunc = "__ref_func_inline";
-        $refFunc($node->field_admins_clientrates[0]['value']); 
-        $refFunc($node->field_admins_crewrates[0]['value']); 
-        $refFunc($node->field_admins_vatrate[0]['value']); 
+        
+        __ref_func_inline($node->field_admins_clientrates[0]['value']); 
+        __ref_func_inline($node->field_admins_crewrates[0]['value']); 
+        //__ref_func_inline($node->field_admins_vatrate[0]['value']); 
     }
      
     if($node->type == 'job' && $op == 'load'){
