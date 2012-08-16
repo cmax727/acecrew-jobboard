@@ -445,6 +445,7 @@ function content_form_alter(&$form, $form_state, $form_id) {
     }
     $form['#pre_render'][] = 'content_alter_extra_weights';
     $form['#content_extra_fields'] = $type['extra'];
+   
   }
 }
 

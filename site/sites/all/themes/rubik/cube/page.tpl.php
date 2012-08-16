@@ -1,4 +1,5 @@
-<?php include('header.inc'); ?>
+<?php 
+include('header.inc'); ?>
 
 <div id='page' class='clear-block limiter page-content'>
   <?php if ($show_messages && $messages): ?>

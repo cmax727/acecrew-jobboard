@@ -11,13 +11,24 @@ function acecrew_theme_registry_alter(&$theme_registry) {
 }
 
 function acecrew_form_alter(&$form, $form_state, $form_id) {
-    if ($form_id == 'job_session_node_form') {
+    //?? saf modified
+    if ($form_id  == 'job_session_node_form' || $form_id  == 'admin_settings_node_form' ) {
 
         unset($form['buttons']['preview']);
         unset($form['buttons']['delete']);
     }
-    
-
+    if ($form_id  == 'admin_settings_node_form' ){
+         $form['#redirect'] = false;
+    }
+/*
+$form['revision_information']['#access'] = FALSE;
+$form['options']['#access'] = FALSE;
+$form['author']['#access'] = FALSE;
+$form['comment_settings']['#access'] = FALSE;
+$form['path']['#access'] = FALSE;
+$form['translations']['#access'] = FALSE;
+$form['menu']['#access'] = FALSE;
+*/
     
     if ($form_id == 'user_register' || $form_id == 'user_profile_form'){
         unset($form['Crew Skills']['profile_payrateid']);
@@ -1083,6 +1094,7 @@ function acecrew_report_form(){
 
 
 function acecrew_nodeapi(&$node, $op, $teaser, $page) {
+    
     if($node->type == 'job'){
         $acecrewmodule = acecrewmodule::getInstance();
         $acecrewmodule->setCurrentJobId($node->nid);
@@ -1120,7 +1132,29 @@ function acecrew_nodeapi(&$node, $op, $teaser, $page) {
         drupal_add_js(array('acecrew' => $my_settings), "setting");
         drupal_add_js(drupal_get_path('module', 'acecrew') . '/theme/acecrew-job-create.js');
     }
-    
+    //?? saf 
+    if($node->type ==  'admin_settings' && $op == 'presave' ){
+        $my_settings = array(
+            'basepath' => drupal_get_path('module', 'acecrew'),
+        );
+        $refFunc = function (&$val){
+            
+        $valArr = explode("\r\n", $val);
+        $valArr = array_filter($valArr, function($arg){
+                    if ( is_numeric($arg)) return true;
+                    return false;
+                    });
+        $valArr = array_unique($valArr);
+        asort($valArr);
+        $val = implode("\r\n", $valArr);
+        
+        };
+        
+        $refFunc($node->field_admins_clientrates[0]['value']); 
+        $refFunc($node->field_admins_crewrates[0]['value']); 
+        $refFunc($node->field_admins_vatrate[0]['value']); 
+    }
+     
     if($node->type == 'job' && $op == 'load'){
         drupal_add_js(drupal_get_path('module', 'acecrew') . '/theme/acecrew-job.js');
         drupal_add_css(drupal_get_path('module', 'acecrew') . '/theme/acecrew-job-sessions.css', 'module', 'all', false);

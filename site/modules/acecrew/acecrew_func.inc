@@ -259,11 +259,31 @@ function acecrew_get_client_by_quote_id($invoice_id)
     return $job;
 }
 
+//??saf modify
+function acecrew_get_ads($field_name){
+ $query = "SELECT n.nid 
+        FROM {node} n 
+        WHERE n.type = '%s' 
+        ORDER BY nid ASC LIMIT 1";
+    $nid =  db_result(db_query($query, 'admin_settings'));
+    
+    $node = node_load($nid);
+    $valueArr = explode("\r\n", $node->{$field_name}[0]['value']);
+    
+    $options = array();
+    //generate options
+    foreach($valueArr as $v){
+      $options["$v"] = "$v/ Hour";
+      $c  = 0;
+    }
+    return $options;
+}
 //get pay rate form element
+//??saf modify
 function _acecrew_get_rates_form($payrateid = null) {
     
     //select available variants
-    $query = "SELECT n.nid, 
+    /*$query = "SELECT n.nid, 
             cpr.field_payrate_name_value as payrate_name, 
             cpr.field_payrate_perhour_value as perhour 
         FROM {node} n JOIN {content_type_crew_payrates} cpr ON n.nid = cpr.nid
@@ -274,9 +294,9 @@ function _acecrew_get_rates_form($payrateid = null) {
     //generate options
     $options = array();
     while ($row = db_fetch_object($query_result)) {
-        $options[$row->nid] = $row->payrate_name . ' (' . $row->perhour . 'GBP)';
-    }
-    
+        $options[$row->nid] = $row->perhour  ;
+    } */
+    $options = acecrew_get_ads('field_admins_crewrates');
     //create select form element
     $form['Crew Skills']['acecrew_payrate_id'] = array(
         '#type' => 'select',
@@ -297,6 +317,9 @@ function _acecrew_get_rates_form($payrateid = null) {
 function acecrew_get_payrate($nid, $with_name = false){
     
     //select rate
+    //?? saf
+    return $nid;
+    
     $query = "SELECT n.nid, 
             cpr.field_payrate_name_value as payrate_name, 
             cpr.field_payrate_perhour_value as perhour 
@@ -406,7 +429,7 @@ function acecrew_get_user_report_clothing($startDate, $endDate, $user){
 function acecrew_get_user_report_hours($startDate, $endDate, $user){
     
     $query = "SELECT js.nid FROM drupal_content_type_job_session js
-	   JOIN drupal_acecrew_session_crews sc ON js.nid = sc.session_nid
+       JOIN drupal_acecrew_session_crews sc ON js.nid = sc.session_nid
        WHERE DATE(js.field_job_session_date_time_value) BETWEEN '%s' AND '%s' 
         AND sc.uid = %d";
     
