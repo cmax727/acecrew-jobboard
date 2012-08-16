@@ -219,7 +219,18 @@ $(document).ready(function(){
   <td>Job Link</td>
   </tr>
   <?php 
-  foreach($vars['curr_activities'] as $activity){
+  // how can arrange $vars with date desc?
+  $arranged_array = array();
+  foreach($vars[curr_activities] as $key => $row)
+  {
+        $dateTime[$key] = $row['date_time'];
+        $arranged_array[$key] = $row;
+
+  }
+  array_multisort($dateTime, SORT_DESC, SORT_STRING, $arranged_array);
+
+  // foreach($vars['curr_activities'] as $activity){
+  foreach($arranged_array as $activity){
   ?>
   <tr>
   <td>
