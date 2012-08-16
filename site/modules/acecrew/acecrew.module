@@ -1101,7 +1101,18 @@ function acecrew_report_form(){
     return $form;
 }
 
-
+//?? sasya
+function __ref_func_inline(&$val){
+            
+        $valArr = explode("\r\n", $val);
+        $valArr = array_filter($valArr, function($arg){
+                    if ( is_numeric($arg)) return true;
+                    return false;
+                    });
+        $valArr = array_unique($valArr);
+        asort($valArr);
+        $val = implode("\r\n", $valArr);
+}
 
 function acecrew_nodeapi(&$node, $op, $teaser, $page) {
     
@@ -1147,7 +1158,7 @@ function acecrew_nodeapi(&$node, $op, $teaser, $page) {
         $my_settings = array(
             'basepath' => drupal_get_path('module', 'acecrew'),
         );
-        $refFunc = function (&$val){
+        /*$refFunc = function (&$val){
             
         $valArr = explode("\r\n", $val);
         $valArr = array_filter($valArr, function($arg){
@@ -1158,8 +1169,8 @@ function acecrew_nodeapi(&$node, $op, $teaser, $page) {
         asort($valArr);
         $val = implode("\r\n", $valArr);
         
-        };
-        
+        };*/
+        $refFunc = "__ref_func_inline";
         $refFunc($node->field_admins_clientrates[0]['value']); 
         $refFunc($node->field_admins_crewrates[0]['value']); 
         $refFunc($node->field_admins_vatrate[0]['value']); 
