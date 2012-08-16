@@ -325,6 +325,11 @@ function _acecrew_calc_crew_hours_cost($hour_rate, $hours)
     return $unit_cost;
 }
 
+
+/*
+ * invoice module, generate invoice 
+ * modified by andton
+ */
 function acecrew_generate_invoice($job_id)
 {
     global $user;
@@ -455,6 +460,11 @@ function acecrew_email_invoice($invoice_id){
     drupal_goto($_SERVER['HTTP_REFERER']);
 }
 
+
+/*
+ * quote module function, generate pdf and rtf document for quote
+ * changed by anton on August 16th, 2012
+ */
 function acecrew_generate_quote($job_id)
 {
     global $user;
