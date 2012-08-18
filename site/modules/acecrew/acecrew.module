@@ -327,7 +327,7 @@ function _acecrew_calc_crew_hours_cost($hour_rate, $hours)
 
 
 /*
- * invoice module, generate invoice 
+ * generate invoice
  * modified by andton
  */
 function acecrew_generate_invoice($job_id)
@@ -462,27 +462,28 @@ function acecrew_email_invoice($invoice_id){
 
 
 /*
- * quote module function, generate pdf and rtf document for quote
- * changed by anton on August 16th, 2012
+ * generate quote
  */
 function acecrew_generate_quote($job_id)
 {
     global $user;
     
-    //get job
+    // get job information
     $job = _acecrew_get_job_node_by_id($job_id);
     if (empty($job)){
         return;
     }
     
+    // get client information
     $client = acecrew_get_client_by_id($job->field_job_client_name[0]['value']);
     if(empty($client)){
         return;
     }
     
+    // get venue information
     $venue = acecrew_get_venue_by_id($job->field_job_venue[0]['value']);
     $venue_name = $venue->field_venue_name[0]['value'];
-    $venue_str = $venue->field_venue_name[0]['value'] . ' ,' . $venue->field_venue_address[0]['value'];
+    $venue_name_address = $venue->field_venue_name[0]['value'] . ', ' . $venue->field_venue_address[0]['value'];
     _acecrew_clear_invoice_items($user->uid);
     $weight = 1;
     
@@ -493,62 +494,62 @@ function acecrew_generate_quote($job_id)
         $session = node_load(array('nid' => $session_row->nid));
         $field_job_session_crews = $session->field_job_session_crews;
         foreach($field_job_session_crews as $crew){
-            
-            if(!empty( $crew['value']['field_crew_job_session_hours_quo'][0]['value'] )){
-                $works_hours[] = $crew['value']['field_crew_job_session_hours_quo'][0]['value'];
-            }
-            
-            if(!empty($crew['value']['field_call_supplements'])){
-                foreach($crew['value']['field_call_supplements'] as $supplement){
-                    if(!empty($supplement['value'])){
-                        $supplements[] = $supplement['value'];
-                    }
-                }
-            }
+//            
+//            if(!empty( $crew['value']['field_crew_job_session_hours_quo'][0]['value'] )){
+//                $works_hours[] = $crew['value']['field_crew_job_session_hours_quo'][0]['value'];
+//            }
+//            
+//            if(!empty($crew['value']['field_call_supplements'])){
+//                foreach($crew['value']['field_call_supplements'] as $supplement){
+//                    if(!empty($supplement['value'])){
+//                        $supplements[] = $supplement['value'];
+//                    }
+//                }
+//            }
         }
         
         //set this session
-        $supplements = array_count_values($supplements);
-        $works_hours = array_count_values($works_hours);
-        $hour_rate = $session->field_job_session_client_rate[0]['value'];
-        
-        foreach($works_hours as $work_hours => $work_count){
-            $description = $session->field_job_session_date_time[0]['value'] . '; ' . $work_count .' crew @ ' . $work_hours . ' hours ';
-            
+//        $supplements = array_count_values($supplements);
+//        $works_hours = array_count_values($works_hours);
+//        $hour_rate = $session->field_job_session_client_rate[0]['value'];
+//        
+//        foreach($works_hours as $work_hours => $work_count){
+//            $description = $session->field_job_session_date_time[0]['value'] . '; ' . $work_count .' crew @ ' . $work_hours . ' hours ';
+//            
             //unit cost calculating depends on count on worked hours, and minimum charge. Default $unit_cost = $hour_rate * $work_hours.
-            $unit_cost = _acecrew_calc_crew_hours_cost($hour_rate, $work_hours);
-            _acecrew_add_invoice_item($description, $work_count, $unit_cost, $user->uid, $weight);
-            $weight += 1;
-        }
-        
-        foreach($supplements as $supp_id => $supp_count){
-            $supplement = _acecrew_get_supplement($supp_id);
-            $description = 'Suppl: ' . $supplement->field_job_supplement_name[0]['value'];
-            if (1 != $supp_count){
-                $description .= '*' . $supp_count;
-            }
-            _acecrew_add_invoice_item($description, $supp_count, $supplement->field_job_supplement_amount[0]['value'], $user->uid, $weight);
-            $weight += 1;
-        }
+//            $unit_cost = _acecrew_calc_crew_hours_cost($hour_rate, $work_hours);
+//            _acecrew_add_invoice_item($description, $work_count, $unit_cost, $user->uid, $weight);
+//            $weight += 1;
+//        }
+//        
+//        foreach($supplements as $supp_id => $supp_count){
+//            $supplement = _acecrew_get_supplement($supp_id);
+//            $description = 'Suppl: ' . $supplement->field_job_supplement_name[0]['value'];
+//            if (1 != $supp_count){
+//                $description .= '*' . $supp_count;
+//            }
+//            _acecrew_add_invoice_item($description, $supp_count, $supplement->field_job_supplement_amount[0]['value'], $user->uid, $weight);
+//            $weight += 1;
+//        }
     }
     
     // Create a new invoice
-    $form_state = array();
-    module_load_include('inc', 'node', 'node.pages');
-    $node = array('type' => 'invoice');
-    $form_state['values']['title'] = 'Quote';
-    $form_state['values']['body'] = '';
-    $form_state['values']['name'] = $user->name;
-    $form_state['values']['op'] = t('Save');
-    $form_state['values']['company_name'] = $client->field_client_name[0]['value'];
-    $form_state['values']['firstname'] = $client->field_client_company_contact[0]['value'];
-    $form_state['values']['street'] = $venue_str;
-    $form_state['values']['template'] = 'acecrewquo';
-    drupal_execute('invoice_node_form', $form_state, (object)$node);
-    
-    $invoice = node_load(array('nid' => $form_state['nid']));
-    
-    _acecrew_add_quote_job_relate($invoice->invoice['invoice_number'], $job_id);
+//    $form_state = array();
+//    module_load_include('inc', 'node', 'node.pages');
+//    $node = array('type' => 'invoice');
+//    $form_state['values']['title'] = 'Quote';
+//    $form_state['values']['body'] = '';
+//    $form_state['values']['name'] = $user->name;
+//    $form_state['values']['op'] = t('Save');
+//    $form_state['values']['company_name'] = $client->field_client_name[0]['value'];
+//    $form_state['values']['firstname'] = $client->field_client_company_contact[0]['value'];
+//    $form_state['values']['street'] = $venue_str;
+//    $form_state['values']['template'] = 'acecrewquo';
+//    drupal_execute('invoice_node_form', $form_state, (object)$node);
+//    
+//    $invoice = node_load(array('nid' => $form_state['nid']));
+//    
+//    _acecrew_add_quote_job_relate($invoice->invoice['invoice_number'], $job_id);
     drupal_goto($_SERVER['HTTP_REFERER']);
 }
 
@@ -1173,7 +1174,7 @@ function acecrew_nodeapi(&$node, $op, $teaser, $page) {
             'total_hours_quoted' => 0,
             'total_hours_quoted_pounds' => 0, 
             'total_crews' => 0);
-        foreach($node->field_job_session_crews as $crew){
+        foreach($node->field_job_session_crews as $crew) {
             if(!empty($crew['value']['field_crew_job_session_hours_wor'][0]['value'])){
                 $totals['total_hours_worked'] += $crew['value']['field_crew_job_session_hours_wor'][0]['value'];
             }
