@@ -183,13 +183,16 @@ function acecrew_menu() {
         'access arguments' => array('edit field_crew_job_session_status'),
         'type' => MENU_CALLBACK,
     );
-    $items['acecrew/del_crew_from_session/%/%'] = array(
+    
+    // added by anton
+    $items['quote/pdf/%'] = array(
         'title' => 'Del crew from session',
-        'page callback' => 'acecrew_del_crew_from_session',
-        'page arguments' => array(2, 3),
+        'page callback' => 'acecrew_quote_view_pdf',
+        'page arguments' => array(2),
         'access arguments' => array('edit field_job_session_crews'),
         'type' => MENU_CALLBACK,
     );
+    
     
     
     return $items;
@@ -480,7 +483,7 @@ function acecrew_generate_quote($job_id)
     global $user;
     
     // get job information
-    $job = _acecrew_get_job_node_by_id($job_id);
+    /*$job = _acecrew_get_job_node_by_id($job_id);
     if (empty($job)){
         return;
     }
@@ -495,72 +498,16 @@ function acecrew_generate_quote($job_id)
     $venue = acecrew_get_venue_by_id($job->field_job_venue[0]['value']);
     $venue_name = $venue->field_venue_name[0]['value'];
     $venue_name_address = $venue->field_venue_name[0]['value'] . ', ' . $venue->field_venue_address[0]['value'];
-    _acecrew_clear_invoice_items($user->uid);
-    $weight = 1;
     
-    $sessions = _acecrew_get_assigned_job_sessions_iterator($job->nid);
-    while ($session_row = db_fetch_object($sessions)) {
+    $job_sessions = _acecrew_get_assigned_job_sessions_iterator($job->nid);
+    while ($job_session = db_fetch_object($job_sessions)) {
         $works_hours = array();
         $supplements = array();
-        $session = node_load(array('nid' => $session_row->nid));
-        $field_job_session_crews = $session->field_job_session_crews;
-        foreach($field_job_session_crews as $crew){
-//            
-//            if(!empty( $crew['value']['field_crew_job_session_hours_quo'][0]['value'] )){
-//                $works_hours[] = $crew['value']['field_crew_job_session_hours_quo'][0]['value'];
-//            }
-//            
-//            if(!empty($crew['value']['field_call_supplements'])){
-//                foreach($crew['value']['field_call_supplements'] as $supplement){
-//                    if(!empty($supplement['value'])){
-//                        $supplements[] = $supplement['value'];
-//                    }
-//                }
-//            }
-        }
-        
-        //set this session
-//        $supplements = array_count_values($supplements);
-//        $works_hours = array_count_values($works_hours);
-//        $hour_rate = $session->field_job_session_client_rate[0]['value'];
-//        
-//        foreach($works_hours as $work_hours => $work_count){
-//            $description = $session->field_job_session_date_time[0]['value'] . '; ' . $work_count .' crew @ ' . $work_hours . ' hours ';
-//            
-            //unit cost calculating depends on count on worked hours, and minimum charge. Default $unit_cost = $hour_rate * $work_hours.
-//            $unit_cost = _acecrew_calc_crew_hours_cost($hour_rate, $work_hours);
-//            _acecrew_add_invoice_item($description, $work_count, $unit_cost, $user->uid, $weight);
-//            $weight += 1;
-//        }
-//        
-//        foreach($supplements as $supp_id => $supp_count){
-//            $supplement = _acecrew_get_supplement($supp_id);
-//            $description = 'Suppl: ' . $supplement->field_job_supplement_name[0]['value'];
-//            if (1 != $supp_count){
-//                $description .= '*' . $supp_count;
-//            }
-//            _acecrew_add_invoice_item($description, $supp_count, $supplement->field_job_supplement_amount[0]['value'], $user->uid, $weight);
-//            $weight += 1;
-//        }
-    }
+        $job_session = node_load(array('nid' => $job_session->nid));
+        $field_job_session_crews = $job_session->field_job_session_crews;
+    }*/
     
-    // Create a new invoice
-//    $form_state = array();
-//    module_load_include('inc', 'node', 'node.pages');
-//    $node = array('type' => 'invoice');
-//    $form_state['values']['title'] = 'Quote';
-//    $form_state['values']['body'] = '';
-//    $form_state['values']['name'] = $user->name;
-//    $form_state['values']['op'] = t('Save');
-//    $form_state['values']['company_name'] = $client->field_client_name[0]['value'];
-//    $form_state['values']['firstname'] = $client->field_client_company_contact[0]['value'];
-//    $form_state['values']['street'] = $venue_str;
-//    $form_state['values']['template'] = 'acecrewquo';
-//    drupal_execute('invoice_node_form', $form_state, (object)$node);
-//    
-//    $invoice = node_load(array('nid' => $form_state['nid']));
-//    
-//    _acecrew_add_quote_job_relate($invoice->invoice['invoice_number'], $job_id);
+    _acecrew_add_quote_job_relate($job_id);
     drupal_goto($_SERVER['HTTP_REFERER']);
 }
 
@@ -1494,7 +1441,7 @@ function theme_acecrew_assigned_docs($docs, $clientEmails) {
     
     $quotes_html = '';
     foreach($docs['quotes'] as $quote_id => $quote){
-        $quotes_html .= "<li><a href=\"$base_path" . "invoice/pdf/$quote_id\">$quote</a> <a href=\"$base_path" . "acecrew/delquote/$quote_id\">Delete</a> <a class=\"email_inv_quo\" id=\"email_inv_$quote_id\" href=\"#\">Email</a> <form enctype=\"multipart/form-data\" method=\"post\" accept-charset=\"UTF-8\" action=\"$base_path" . "acecrew/emailquote/$quote_id\" class=\"client_emails_form\" id=\"client_emails_form_$quote_id\"> $clientEmailsSelectbox </form> </li>"; 
+        $quotes_html .= "<li><a href=\"$base_path" . "quote/pdf/$quote_id\">$quote</a> <a href=\"$base_path" . "acecrew/delquote/$quote_id\">Delete</a> <a class=\"email_inv_quo\" id=\"email_inv_$quote_id\" href=\"#\">Email</a> <form enctype=\"multipart/form-data\" method=\"post\" accept-charset=\"UTF-8\" action=\"$base_path" . "acecrew/emailquote/$quote_id\" class=\"client_emails_form\" id=\"client_emails_form_$quote_id\"> $clientEmailsSelectbox </form> </li>"; 
     }
     if(!empty($quotes_html)){
         $quotes_html = '<ul>' . $quotes_html . '</ul>';
@@ -1509,6 +1456,7 @@ function theme_acecrew_assigned_docs($docs, $clientEmails) {
         ' . $quotes_html . '
         <a href="' .$base_path .  'acecrew/generatequote/' . $docs['job_id'] . '" class="acecrew_job_button" id="acecrew_job_button_quote">GENERATE QUOTE</a> <br />
     </div>';
+    
     return $output;
 }
 
@@ -1736,6 +1684,16 @@ function theme_acecrew_report_table($report)
     $charges[] = array(t('Total'), $summ);
     $output = theme_table($header, $charges);
     return $output;
+}
+
+function acecrew_quote_view_pdf($quote_id) {
+    _quote_dompdf_include_lib();
+    $html = _quote_get_html($quote_id, 'pdf');
+    $dompdf = new DOMPDF();
+    $dompdf->load_html($html);
+    $dompdf->render();
+    $dompdf->stream("quote-". $quote_id .".pdf", array('Attachment' => 1));
+    drupal_goto($_SERVER['HTTP_REFERER']);
 }
 
 drupal_add_css(drupal_get_path('module', 'acecrew') . '/theme/acecrew-job-list.css', 'module', 'all', false);
