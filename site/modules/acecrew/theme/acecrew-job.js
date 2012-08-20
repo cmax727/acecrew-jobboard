@@ -28,7 +28,32 @@ $(document).ready(function() {
     });
     
     
-
+    $('.email_inv_quo').click(function(){
+        var id = $(this).attr("id");
+        id = id.substring(10);
+        $('#client_emails_form_' + id).submit();
+        return false;
+    });
+    
+    
+    /*$('.session_crew_status_select').change(function(){
+        var session_crew_status_select_id = $(this).attr('id');
+        acecrew_change_crew_status(session_crew_status_select_id);
+    });
+    
+    
+    //session crews generation
+    $('#acecrew_session_add_form #edit-field-job-session-crews-items').hide();
+    $('#acecrew_session_add_form #edit-field-job-session-crews-items').before('<button id="create_crew_boxes" type="button">Create crew boxes</button>');
+    $('#create_crew_boxes').click(function(){
+        $('#acecrew_session_add_form #edit-field-job-session-crews-field-job-session-crews-add-more').parent().hide();
+        $('#acecrew_session_add_form #edit-field-job-session-crews-field-job-session-crews-add-more').trigger('mousedown');
+        $('#acecrew_session_add_form #edit-field-job-session-crews-items').show();
+        $('#acecrew_session_add_form #edit-field-job-session-crews-field-job-session-crews-add-more').parent().hide();
+        return false;
+    });*/
+    
+    
     
     
     $('body').ajaxComplete(function(){

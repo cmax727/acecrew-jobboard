@@ -512,51 +512,10 @@ function acecrew_generate_quote($job_id)
 }
 
 function acecrew_delete_quote($quote_id){
-    $nid = db_result(db_query("SELECT nid FROM {invoice_invoices} WHERE iid=%d", $quote_id));
-    node_delete($nid);
-    db_query("DELETE FROM {acecrew_job_quotes} WHERE quote_id=%d", $quote_id);
+    db_query("DELETE FROM {acecrew_job_quotes} WHERE acecrew_job_quote_id=%d", $quote_id);
     drupal_goto($_SERVER['HTTP_REFERER']);
 }
 
-function acecrew_email_quote($invoice_id){
-    $invoice_path = drupal_get_path('module', 'invoice');
-    require_once($invoice_path . '/dompdf/dompdf_config.inc.php');  
-    $html = _invoice_get_html($invoice_id, 'pdf');
-    $dompdf = new DOMPDF();
-    $dompdf->load_html($html);
-    $dompdf->render();
-    $pdf = $dompdf->output();
-    
-    $filename = 'quote_' . $invoice_id . '.pdf';
-    $filepath = drupal_get_path('module', 'acecrew') . '/temp/';
-    file_put_contents  ($filepath . $filename, $pdf);
-    
-    if(empty($_POST['client_emails'])){
-        $client = acecrew_get_client_by_quote_id($invoice_id);
-        $client_email = $client->field_client_company_email[0]['email'];
-    } else {
-        $client_email = $_POST['client_emails'];
-    }
-    
-    module_load_include('inc', 'phpmailer', 'includes/phpmailer.drupal');
-    $mail = new DrupalPHPMailer();
-    $mail->IsMail();
-    $mail->From     = "from@example.com";
-    $mail->AddAddress($client_email);
-    $mail->CreateBody();
-    $mail->Subject  = t('Ace Crew Quote');
-    $mail->Body = t('This is your quote. Please see that attached file.');
-    $mail->AddAttachment($filepath . $filename, $filename, "base64", "application/pdf");
-    
-    if(!$mail->Send()) {
-        drupal_set_message(t('Can\'t send email'));
-    } else {
-        drupal_set_message(t('Email has been sent'));
-    }
-    
-    unlink($filepath . $filename);
-    drupal_goto($_SERVER['HTTP_REFERER']);
-}
 //?? sasya added
 function acecrew_calendar_popup_sms($callNodeid){
     modalframe_child_js() ;
@@ -1695,5 +1654,46 @@ function acecrew_quote_view_pdf($quote_id) {
     $dompdf->stream("quote-". $quote_id .".pdf", array('Attachment' => 1));
     drupal_goto($_SERVER['HTTP_REFERER']);
 }
+
+function acecrew_email_quote($quote_id){
+    $path = drupal_get_path('module', 'acecrew');
+    require_once($path . '/dompdf/dompdf_config.inc.php');  
+    $html = _quote_get_html($quote_id, 'pdf');
+    $dompdf = new DOMPDF();
+    $dompdf->load_html($html);
+    $dompdf->render();
+    $pdf = $dompdf->output();
+    
+    $filename = 'quote_' . $quote_id . '.pdf';
+    $filepath = drupal_get_path('module', 'acecrew') . '/temp/';
+    file_put_contents  ($filepath . $filename, $pdf);
+    
+    if(empty($_POST['client_emails'])){
+        $client = acecrew_get_client_by_quote_id($invoice_id);
+        $client_email = $client->field_client_company_email[0]['email'];
+    } else {
+        $client_email = $_POST['client_emails'];
+    }
+    
+    module_load_include('inc', 'phpmailer', 'includes/phpmailer.drupal');
+    $mail = new DrupalPHPMailer();
+    $mail->IsMail();
+    $mail->From     = "from@example.com";
+    $mail->AddAddress($client_email);
+    $mail->CreateBody();
+    $mail->Subject  = t('Ace Crew Quote');
+    $mail->Body = t('This is your quote. Please see that attached file.');
+    $mail->AddAttachment($filepath . $filename, $filename, "base64", "application/pdf");
+    
+    if(!$mail->Send()) {
+        drupal_set_message(t('Can\'t send email'));
+    } else {
+        drupal_set_message(t('Email has been sent'));
+    }
+    
+    unlink($filepath . $filename);
+    drupal_goto($_SERVER['HTTP_REFERER']);
+}
+
 
 drupal_add_css(drupal_get_path('module', 'acecrew') . '/theme/acecrew-job-list.css', 'module', 'all', false);
