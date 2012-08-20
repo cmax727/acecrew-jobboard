@@ -1656,7 +1656,6 @@ function acecrew_quote_view_pdf($quote_id) {
 }
 
 function acecrew_email_quote($quote_id){
-    
     $path = drupal_get_path('module', 'acecrew');
     require_once($path . '/dompdf/dompdf_config.inc.php');  
     $html = _quote_get_html($quote_id, 'pdf');
