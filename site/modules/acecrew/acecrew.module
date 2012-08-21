@@ -1495,7 +1495,7 @@ function theme_acecrew_calendar_scheduler($scheduler, $date)
                 <div class="call-fourth-row"><strong>Crew Names:</strong> ' . $crew_names . '</div>
                 <div class="call-buttons">
                     <a href="#" class="loadbtn" id="'.$event['job_session_id'].'">Load Call</a>
-                    <a href="#">Allocate Skills</a>
+                    <a href="/supplement/allocation/'.$event['job_session_id'].'">Allocate Skills</a>
                     <a href="#" class="smsbtn" onclick="calendar_popup_sms_click('."'$base_url' ,'${event['nodeid']}'". ')">Generate SMS Content</a>
                 </div>', 
             'class' => 'call-listing-item', 
