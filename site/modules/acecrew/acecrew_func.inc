@@ -501,12 +501,10 @@ function _quote_get_html($quote_id, $type='print') {
     $venue = _get_venue_by_job($job);
     $callings = _get_callings_by_job($job);
     
-    $html = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">';
-    $html .= '<html xmlns="http://www.w3.org/1999/xhtml" lang="nl" xml:lang="nl" dir="ltr">';
+    $html = '<!doctype>';
     $html .= '<head>';
     $html .= '<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-15" />';
     $html .= '<html><head>';
-    $html .= '<link type="text/css" rel="stylesheet" media="all" href="http://'. $_SERVER['HTTP_HOST'] . base_path() . drupal_get_path('module', 'invoice') .'/theme/acecrew-quote.css" />';
     $html .= '</head><body>';
 
     $html .= theme_acecrew_quote_body($job, $client, $client_contact, $venue, $callings);

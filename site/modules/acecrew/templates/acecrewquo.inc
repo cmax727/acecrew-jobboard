@@ -163,6 +163,7 @@ function _acecrew_quote_get_template_output($quote, $type=NULL) {
   }
   
   echo '<table width=100% border=1 cellspacing=0 cellpadding=0>';
+  echo '<tr><td colspan=9></td><td>&nbsp;</td><td>Unit Price</td><td>Total</td></tr>';
   $call_index = 1;  
   foreach ($callings as $call) {
       echo '
@@ -177,7 +178,7 @@ function _acecrew_quote_get_template_output($quote, $type=NULL) {
             <td width=5% valign=top>Hours: </td>
             <td width=11% valign=top>' . $call->field_job_session_hours_value . '</td>
             <td width=2% valign=top>=</td>
-            <td width=8% valign=top>0.00</td>
+            <td width=8% valign=top>' . $call->field_job_session_client_rate_value * $call->field_job_session_hours_value * $call->field_job_session_crew_value . '</td>
             <td width=8% valign=top>0.00</td>
         </tr>
         <tr>
