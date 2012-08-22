@@ -482,7 +482,8 @@ input.form-autocomplete, input.form-text, textarea.form-textarea, select.form-se
 #user-login-form {width: 220px; margin: 20px auto;}
 #user-login-form #edit-submit {float: right; margin-top: 10px;}
 .container-inline .fieldset-content, .fieldset-content {border: 0;}
-.page-acecrew #page, .page-acecrew .content-wrapper {background: transparent !important; border: 0 !important; padding: 0 !important;}
+.page-acecrew #page, .page-acecrew .content-wrapper, .page-supplement #page, .page-supplement .content-wrapper {background: transparent !important; border: 0 !important; padding: 0 !important;}
+
 .page-acecrew .content-wrapper {margin: 30px 0 !important;}
 .block .block-content, .container-inline .fieldset-content, .fieldset-content {background: transparent;}
 #acecrew-calendar-form .fieldset-content {background: url(images/pattern-grey.png) repeat 0 0; border-radius: 6px; margin-top: 45px; padding: 2px 10px 8px !important;}
