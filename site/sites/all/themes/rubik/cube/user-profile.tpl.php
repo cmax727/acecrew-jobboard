@@ -40,10 +40,41 @@
  *   Where the html is handled for each item in the group.
  * @see template_preprocess_user_profile()
  */
+ 
+ /*
+ available values
+  0:  $template_files
+  1:  $account
+  2:  $zebra
+  3:  $id
+  4:  $directory
+  5:  $is_admin
+  6:  $is_front
+  7:  $logged_in
+  8:  $db_is_active
+  9:  $user
+  10: $profile
+  11: $user_profile
+  12: $content_profile
+
+ 
+ */
+ 
 ?>
+<div class="profile">
+  <?php //print $user_profile; ?>
+  <?php 
+  //var_dump($account); 
+  //var_dump($user); 
+  ?>
+</div>
+
 <?php
+ // return;
 $user_view=$_GET;
 $user_view=explode('/',$user_view['q']);
+drupal_add_js(drupal_get_path('module', 'acecrew') . '/theme/datetimepicker.js');
+drupal_add_js(drupal_get_path('module', 'acecrew') . '/theme/jquery.blockui.js');
 
 if($user_view[3] == t('current-activity'))
 {
@@ -111,6 +142,7 @@ $(document).ready(function(){
         $('.'+id).show('slow');
     });
 });
+
 </script>
 
 <div id='tabs'>
@@ -264,12 +296,144 @@ $(document).ready(function(){
   </div>
   <?php }?>
       
-  <?php if(isset($user_view[3]) && $user_view[3]=='Booked Off'){?>    
+  <?php if(isset($user_view[3]) && $user_view[3]=='booked-off'):?>    
+  <script type="text/javascript">
+  $(document).ready(function(){
+    $('#ub_date_start').datetimepicker({ 
+      dateFormat: 'mm/dd/yy',
+      timeFormat: ' hh:ii' 
+    });
+    $('#ub_date_end').datetimepicker({ 
+      dateFormat: 'mm/dd/yy',
+      timeFormat: ' hh:ii' 
+    });
+    
+     $(document).ajaxStart(function(){
+        //$(this).show();
+        $('#msgboard').hide()
+        $.blockUI();
+     }).ajaxStop(function(){
+        //$(this).hide();
+        $.unblockUI();
+     });
+ 
+    
+  });
+
+  function addBookedOff(){
+      postData = {
+          uid:'<?php echo $account->uid?>', //$('[name=uid]').val()
+          ub_label:$('#ub_label').val(),
+          ub_date_start:$('#ub_date_start').val(),
+          ub_date_end:$('#ub_date_end').val(),
+      }
+      
+      $.post(Drupal.settings.basePath + "acecrew/ajax/usr/addbookedoff/uid:<?php echo $account->uid?>",
+            postData,
+            function(data){
+                var result = Drupal.parseJson(data);
+                
+                if ( result.result == 1){
+                    $('#msgboard').html(result.msg);
+                    $('#msgboard').addClass("status");
+                    //add new row to the end
+                    $rowHtml = "<tr id='tr_ub_"+ result.node_id + "'><td>"
+                        + postData['ub_label']+ '</td> <td>'
+                        + postData['ub_date_start']+ '</td> <td>'
+                        + postData['ub_date_end'] + '</td>  <td>'
+                        + "<a href='#' onclick=\"delBookedOff('" +result.node_id +"')\">delete</a></td>"
+                        + "</tr>"
+                    $($rowHtml).insertAfter('#ub-list-0').fadeOut(500).fadeIn(500)
+                    
+                }else if ( result.result== 0){
+                    $('#msgboard').html(result.msg);
+                    $('#msgboard').addClass("error")
+                }
+                
+                $('#msgboard').show(1000)
+            }); 
+  }
+  
+  function delBookedOff(nid){
+        $.get(Drupal.settings.basePath + "acecrew/ajax/usr/delbookedoff/"+nid, function(data){
+           
+            var result = Drupal.parseJson(data);
+            
+            if ( result.result == 1){
+                $('#msgboard').html(result.msg);
+                $('#msgboard').addClass("status")
+                
+                //remove node
+                 $('#tr_ub_'+nid).css('background-color', "red")
+                $('#tr_ub_'+nid).fadeOut(1000);
+                setTimeout("$('#tr_ub_"+nid+"').remove()", 1000);
+            }else if ( result.result== 0){
+                $('#msgboard').html(result.msg);
+                $('#msgboard').addClass("error")
+            }
+            
+            $('#msgboard').show(1000)
+        });
+  }
+ 
+ 
+  </script>
+  <!--
   <h2 class="profile_title" title="booked_off">Booked Off:</h2>
   <div class="booked_off profile_item">
   <div><?=$account->profile_booked;?></div>
   </div>
-  <?php }?>
+  -->
+  
+  <div id='msgboard' class="messages" style="display:none">Notification message</div>
+  <!-- add form -->
+  <div>
+    <form action="" method="POST">
+    <input type="hidden" name="uid" value="<?php echo $account->uid?>"/>
+    <fieldset>
+    <legend> Add New:</legend>
+    <label>Label</label>
+    <span><input type="text" name="ub_label" id="ub_label" class="ub-text"></span>
+    <label>Start Date+Time</label>
+    <span><input type="text" id="ub_date_start" name="ub_date_start" class="ub-calendar"></span>
+    <label>End Date+Time</label>
+    <span><input type="text" id="ub_date_end" name="ub_date_end" class="ub-calendar"></span>
+    <span><input type="button" value="Add new line" class="form-submit" onclick="addBookedOff()"/></span>
+    </fieldset>
+    </form>
+  </div>
+  
+  <?php
+      module_load_include('inc', 'node', 'node.pages');
+      $node_ub_type = 'user_bookedoff';
+      $boForm = drupal_get_form($node_ub_type.'_node_form', array('type'=>$node_ub_type));
+      //echo $boForm;
+  ?>
+  
+
+  <hr style="display:block"/>
+  <table id="ub-list">
+  <tr id="ub-list-0" tclass="table-columns">
+      <th>Label</th>
+      <th>Date and time from</th>
+      <th>Date and time to</th>
+      <th></th>
+  </tr>
+  <?php foreach($account->bookoff_list as $row ){
+   $nid = $row['nid'];
+   
+   echo <<<TABLE_ROW
+    <tr id="tr_ub_$nid">
+    <td>$row[field_ub_label_value] </td>
+    <td>$row[field_ub_date_start_value]</td>
+    <td>$row[field_ub_date_end_value]</td>
+    <td><a href="#" onclick="delBookedOff('$nid')">delete</a></td>
+  </tr>
+TABLE_ROW;
+  }?>
+  
+  </table>
+  <?php endif;?>
   
 </div>
 

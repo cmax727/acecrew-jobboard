@@ -15,10 +15,10 @@ class acecrewmodule {
     public static function getInstance() {
         if (self::$instance === null) {
             self::$instance = new acecrewmodule();
-        }
+        }       
         return self::$instance;
     }
-   
+        
     
     public function getCurrentJobId()
     {
@@ -260,6 +260,11 @@ function acecrew_get_client_by_quote_id($invoice_id)
 }
 
 //??saf modify
+/**
+* get ADmin-Setting values by field name
+* 
+* @param mixed $field_name
+*/
 function acecrew_get_ads($field_name){
  $query = "SELECT n.nid 
         FROM {node} n 

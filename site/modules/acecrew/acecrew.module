@@ -34,13 +34,68 @@ $form['menu']['#access'] = FALSE;
         unset($form['Crew Skills']['profile_payrateid']);
     }
 }
+//??sasya{
+function acecrew_del_user_bookedoff($nid){
+    node_delete($nid);
+    drupal_json(array('result' => '1', 'msg'=>'Successfully deleted'));
+    exit();
+}
 
+function acecrew_add_user_bookedoff(){
+    
+    $query = file_get_contents('php://input');
+    extract($_POST);
+    module_load_include('inc', 'node', 'node.pages');
+    
+    $node = new StdClass();
+    $node->field_ub_label[0]['value']= $ub_label;
+    
+    //$ub_date_start = explode(" ",$ub_date_start);
+     //   mm/dd/yy => yy-mm-dd
+    $ub_date_start = preg_replace("/(\d+)\/(\d+)\/(\d+)/", '\3-\1-\2', $ub_date_start);
+    $node->field_ub_date_start[0]['value']= $ub_date_start;//array('date'=>$ub_date_start[0], 'time'=>$ub_date_start[1]);
+    
+    $ub_date_end = preg_replace("/(\d+)\/(\d+)\/(\d+)/", '\3-\1-\2', $ub_date_end);
+    $node->field_ub_date_end[0]['value']=$ub_date_start;// array('date'=>$ub_date_end[0], 'time'=>$ub_date_end[1]);
+    $node->field_ub_owner = array(0=>array('uid'=>$uid ));
+    $node->{type} = 'user_bookedoff';
+    
+    $form_state = array();
+    //drupal_execute( $node->type, $form_state, (object)$node);
+    $cn = node_submit($node);
+    node_save($cn);
+    if ($cn->nid){ //success
+        drupal_json(array('result' => '1', 'msg'=>'Added new bookoff', 
+            'node_id'=>$cn->nid)); 
+    }else{
+        drupal_json(array('result' => '0', 'msg'=>'bookoff operatio failed')); 
+    }
+    exit();
+}
+//}
 
 /**
 * Implementaiton of hook_menu()
 */
 function acecrew_menu() {
     $items = array();
+    //??saf
+    $items['acecrew/ajax/usr/delbookedoff/%'] = array(
+        'title' => 'Ace Crew AJAX Delete User\s Booked-off',
+        'page callback' => 'acecrew_del_user_bookedoff',
+        'page arguments' => array(4),
+        'access arguments' => array('delete any user_bookedoff content'),
+        'type' => MENU_CALLBACK,
+    );
+    //??saf
+    $items['acecrew/ajax/usr/addbookedoff/%'] = array(
+        'title' => 'Ace Crew AJAX Create User\'s Booked-off',
+        'page callback' => 'acecrew_add_user_bookedoff',
+        'page arguments' => array(3),
+        'access arguments' => array('create user_bookedoff content'),
+        'type' => MENU_CALLBACK,
+    );
+    
     $items['acecrew/ajax/delsession/%'] = array(
         'title' => 'Ace Crew AJAX Delete Session',
         'page callback' => 'acecrew_del_job_session',
@@ -258,8 +313,19 @@ function acecrew_user($op, &$edit, &$account, $category = NULL) {
         //save Pay Rate ID to appropriate profile field
         $edit['profile_payrateid'] = $edit['acecrew_payrate_id'];
     } elseif('insert' == $op){
-       
-    }  
+        
+    }
+    //??saf
+    if ( 'view' == $op)  {
+        $sql = "select * from {content_type_user_bookedoff} where field_ub_owner_uid = %d";
+        $query = db_query($sql, array($account->uid));
+        
+        $ret = array();
+        while($row = db_fetch_array($query)){
+            $ret[] = $row;
+        }
+        $account->bookoff_list = $ret;
+    }
 }
 
 function acecrew_profile_alter(&$account){
@@ -289,9 +355,7 @@ function acecrew_profile_alter(&$account){
     );
     
     drupal_add_css(drupal_get_path('module', 'acecrew') . '/theme/acecrew-profile-reports.css', 'module', 'all', false);
-    drupal_add_js(array('acecrew' => $my_settings), "setting");
     drupal_add_js(drupal_get_path('module', 'acecrew') . '/theme/acecrew-profile-reports.js');
-    
     
     $output = '';
     $output .= '<div id="acecrew_report_form"> ' . drupal_get_form('acecrew_report_form') . ' </div> ';
