@@ -76,8 +76,7 @@ function _acecrew_get_assigned_job_sessions($nid) {
 function _acecrew_get_assigned_job_docs($nid){
     $docs = array();
     
-    $query = "SELECT ctj.field_job_number_value AS job_id FROM {content_type_job} ctj
-         WHERE ctj.nid = '%d' LIMIT 1";
+    $query = "SELECT ctj.field_job_number_value AS job_id FROM {content_type_job} ctj WHERE ctj.nid = '%d' LIMIT 1";
     $query_result =  db_query($query, $nid);
     $row = db_fetch_object($query_result);
     $docs['job_id'] = $row->job_id;

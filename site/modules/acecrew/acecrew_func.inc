@@ -112,22 +112,20 @@ function _acecrew_get_assigned_job_docs($nid){
     $query = "SELECT ji.job_id, ji.invoice_id, n.created  FROM {content_type_job} ctj
         JOIN {acecrew_job_invoices} ji ON ctj.field_job_number_value = ji.job_id
         JOIN {invoice_invoices} ii ON ji.invoice_id = ii.iid  
-        JOIN {node} n ON ii.nid = n.nid
-         WHERE ctj.nid = '%d'";
+        JOIN {node} n ON ii.nid = n.nid WHERE ctj.nid = '%d'";
+        
     $query_result =  db_query($query, $nid);
+    
     while ($row = db_fetch_object($query_result)){
         $docs['invoices'][$row->invoice_id] = date('Y-m-d H:i:s', $row->created);
     }
     
     $docs['quotes'] = array();
-    $query = "SELECT jq.job_id, jq.quote_id, n.created  FROM {content_type_job} ctj
-        JOIN {acecrew_job_quotes} jq ON ctj.field_job_number_value = jq.job_id
-        JOIN {invoice_invoices} ii ON jq.quote_id = ii.iid  
-        JOIN {node} n ON ii.nid = n.nid
-         WHERE ctj.nid = '%d'";
+    $query = "SELECT * FROM {acecrew_job_quotes} jq WHERE jq.job_id IN (SELECT ctj.field_job_number_value FROM {content_type_job} ctj WHERE ctj.nid = '%d') ORDER BY jq.created DESC";
     $query_result =  db_query($query, $nid);
+    
     while ($row = db_fetch_object($query_result)){
-        $docs['quotes'][$row->quote_id] = date('Y-m-d H:i:s', $row->created);
+        $docs['quotes'][$row->acecrew_job_quote_id] = date('Y-m-d H:i:s', $row->created);
     }
     
     return $docs;
@@ -160,11 +158,10 @@ function _acecrew_add_invoice_job_relate($invoice_number, $job_id){
 }
 
 //set relate between job and quote
-function _acecrew_add_quote_job_relate($quote_number, $job_id){
-    $query = "INSERT INTO {acecrew_job_quotes} 
-        (job_id, quote_id) VALUES
-        ('%d','%d')";
-    $query_result =  db_query($query, $job_id, $quote_number);
+function _acecrew_add_quote_job_relate($job_id){
+    $date = mktime();
+    $query = "INSERT INTO {acecrew_job_quotes} (job_id, created) VALUES ('%d', '%d')";
+    $query_result = db_query($query, $job_id, $date);
 }
 
 function _acecrew_get_supplement($supp_id){
@@ -490,4 +487,103 @@ function _acecrew_get_client_nid_by_job_nid($job_nid){
     $query_result =  db_query($query, $job_nid);
     $row = db_fetch_object($query_result);
     return $row->nid;
+}
+
+function _quote_dompdf_include_lib() {
+    require_once(dirname(__FILE__) .'/dompdf/dompdf_config.inc.php');  
+}
+
+function _quote_get_html($quote_id, $type='print') {
+    $job = NULL;
+    $query = "SELECT ctj.*, ajq.* FROM {content_type_job} ctj, {acecrew_job_quotes} ajq WHERE ajq.job_id=ctj.field_job_number_value AND ajq.acecrew_job_quote_id='%s'";
+    $query_result = db_query($query, $quote_id);
+    while($row = db_fetch_object($query_result)){
+        $job = $row;
+    }
+
+    $client = _get_client_by_job($job);
+    $client_contact = _get_client_contact_by_id($job);
+    $venue = _get_venue_by_job($job);
+    $callings = _get_callings_by_job($job);
+    
+    $html = '<!doctype>';
+    $html .= '<head>';
+    $html .= '<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-15" />';
+    $html .= '<html><head>';
+    $html .= '</head><body>';
+
+    $html .= theme_acecrew_quote_body($job, $client, $client_contact, $venue, $callings);
+
+    // The eurosign is not supported as applicable character, so replace it with a ascii code
+
+    $html .= '</body></html>';
+    return $html;
+}
+
+function _get_client_by_job($job) {
+    $client = NULL;
+    $query = "SELECT * FROM {content_type_job} ctj, {content_type_client} ctc WHERE ctj.field_job_client_name_value = ctc.field_client_id_value and ctj.vid='%d'";
+    $query_result = db_query($query, $job->vid);
+    while($row = db_fetch_object($query_result)) {
+        $client = $row;
+    }
+    
+    return $client;
+}
+
+function _get_client_contact_by_id($job) {
+    $client_contact = NULL;
+    
+    $query = "SELECT * FROM {content_type_job} ctj, {content_type_client_contact} ctcc WHERE ctj.field_job_client_contact_value = ctcc.vid and ctj.vid='%d'";
+    $query_result = db_query($query, $job->vid);
+    while($row = db_fetch_object($query_result)) {
+        $client_contact = $row;
+    }
+
+    return $client_contact;    
+}
+
+function _get_venue_by_job($job) {
+    $venue = NULL;
+    
+    $query = "SELECT * FROM {content_type_job} ctj, {content_type_venue} ctv WHERE ctj.field_job_venue_value = ctv.field_venue_id_value and ctj.vid='%d'";
+    $query_result = db_query($query, $job->vid);
+    while($row = db_fetch_object($query_result)) {
+        $venue = $row;
+    }
+
+    return $venue;
+}
+
+function _get_callings_by_job($job) {
+    $callings = array();
+    
+    $query = "SELECT * FROM {content_type_job} ctj, {content_type_job_session} ctjs WHERE ctjs.field_session_job_nid_value = ctj.nid and ctj.vid='%d'";
+    $query_result = db_query($query, $job->vid);
+    while($row = db_fetch_object($query_result)) {
+        $callings[] = $row;
+    }
+
+    return $callings;
+}
+    
+function theme_acecrew_quote_body($job, $client, $client_contact, $venue, $callings) {
+    $node = array(
+            'job' => $job, 
+            'client' => $client, 
+            'client_contact' => $client_contact, 
+            'venue' => $venue, 
+            'callings' => $callings);
+    
+    $content = '<div class="quote-wrapper">';
+
+    require_once dirname(__FILE__) .'/templates/acecrewquo.inc';
+    drupal_add_css(drupal_get_path('module', 'acecrew') .'/templates/acecrewquo.css', 'module');
+
+    $content_function = '_acecrew_quote_get_template_output';
+    $content .= $content_function($node, 'pdf');  
+
+    $content .= '</div>';
+
+    return $content;
 }
