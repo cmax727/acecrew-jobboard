@@ -320,7 +320,24 @@ $(document).ready(function(){
     
   });
 
+  function formValidate(){
+	  if ( $('#ub_label').val().length<1 ||
+          $('#ub_date_start').val().length<1 ||
+          $('#ub_date_end').val().length < 1 ) { 
+		  return false;
+	  }else{
+		  return true;
+	  }
+  }
   function addBookedOff(){
+	  if (! formValidate())
+	  {				
+		  $('#msgboard').html("invalid input value");
+		  $('#msgboard').addClass("error");
+		  $('#msgboard').removeClass('status');
+		  $('#msgboard').show(1000)
+		  return;
+	  }
       postData = {
           uid:'<?php echo $account->uid?>', //$('[name=uid]').val()
           ub_label:$('#ub_label').val(),
